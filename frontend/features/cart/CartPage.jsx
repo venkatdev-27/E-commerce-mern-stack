@@ -31,10 +31,9 @@ const CartPage = () => {
         };
     });
 
-    const subtotal = itemDetails.reduce((sum, item) => sum + item.totalPrice, 0);
+    const finalTotal = itemDetails.reduce((sum, item) => sum + item.totalPrice, 0);
     const totalDiscount = itemDetails.reduce((sum, item) => sum + item.totalDiscount, 0);
-
-    const finalTotal = subtotal;
+    const grossTotal = itemDetails.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
     const handleCheckout = () => {
         if (!isAuthenticated) {
@@ -189,7 +188,7 @@ const CartPage = () => {
                                     <span>
                                         Subtotal ({items.reduce((acc, i) => acc + i.quantity, 0)} items)
                                     </span>
-                                    <span>₹{subtotal.toFixed(2)}</span>
+                                    <span>₹{grossTotal.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between text-gray-600">
                                     <span>Discount</span>

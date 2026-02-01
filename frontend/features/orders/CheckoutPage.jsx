@@ -231,35 +231,35 @@ const CheckoutPage = () => {
     setIsProcessing(true);
 
     try {
-    const orderPayload = {
-  items: items.map((item) => ({
-    product: item._id || item.id,   // ✅ backend expects "product"
-    name: item.name,                // ✅ required
-    price: item.price,              // ✅ required
-    quantity: Number(item.quantity), // ✅ required
-    image: item.image,              // ✅ optional but safe
-  })),
-  totalAmount: Number(finalTotal.toFixed(2)),
-  paymentMethod: paymentMethod.toUpperCase(),
-  shippingAddress: selectedAddress,
-};
+      const orderPayload = {
+        items: items.map((item) => ({
+          product: item._id || item.id,   // ✅ backend expects "product"
+          name: item.name,                // ✅ required
+          price: item.price,              // ✅ required
+          quantity: Number(item.quantity), // ✅ required
+          image: item.image,              // ✅ optional but safe
+        })),
+        totalAmount: Number(finalTotal.toFixed(2)),
+        paymentMethod: paymentMethod.toUpperCase(),
+        shippingAddress: selectedAddress,
+      };
 
       console.log("Sending order payload 👉", orderPayload);
 
 
-    // 🔥 freeze items (VERY IMPORTANT)
-const frozenItems = JSON.parse(JSON.stringify(orderPayload.items));
+      // 🔥 freeze items (VERY IMPORTANT)
+      const frozenItems = JSON.parse(JSON.stringify(orderPayload.items));
 
-const order = await dispatch(
-  placeOrderAsync({
-    items: frozenItems,
-    totalAmount: orderPayload.totalAmount,
-    paymentMethod: orderPayload.paymentMethod,
-    shippingAddress: orderPayload.shippingAddress,
-  })
-).unwrap();
+      const order = await dispatch(
+        placeOrderAsync({
+          items: frozenItems,
+          totalAmount: orderPayload.totalAmount,
+          paymentMethod: orderPayload.paymentMethod,
+          shippingAddress: orderPayload.shippingAddress,
+        })
+      ).unwrap();
 
-dispatch(clearCart());
+      dispatch(clearCart());
 
       setPlacedOrderId(order.orderNumber || order._id || "");
       setIsOrderPlaced(true);
@@ -366,23 +366,20 @@ dispatch(clearCart());
               return (
                 <div
                   key={step.number}
-                  className={`flex flex-col items-center ${
-                    isActive ? "opacity-100" : "opacity-60"
-                  }`}
+                  className={`flex flex-col items-center ${isActive ? "opacity-100" : "opacity-60"
+                    }`}
                 >
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 z-10 ${
-                      isActive
-                        ? "bg-indigo-600 border-indigo-600 text-white shadow-md"
-                        : "bg-white border-gray-300 text-gray-400"
-                    }`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 z-10 ${isActive
+                      ? "bg-indigo-600 border-indigo-600 text-white shadow-md"
+                      : "bg-white border-gray-300 text-gray-400"
+                      }`}
                   >
                     <step.icon size={14} />
                   </div>
                   <span
-                    className={`text-[10px] font-bold mt-1 uppercase tracking-wide ${
-                      isActive ? "text-indigo-900" : "text-gray-400"
-                    }`}
+                    className={`text-[10px] font-bold mt-1 uppercase tracking-wide ${isActive ? "text-indigo-900" : "text-gray-400"
+                      }`}
                   >
                     {step.title}
                   </span>
@@ -413,19 +410,17 @@ dispatch(clearCart());
                     <div
                       key={addr.id}
                       onClick={() => setSelectedAddressId(addr.id)}
-                      className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer group ${
-                        selectedAddressId === addr.id
-                          ? "border-indigo-600 bg-indigo-50/20 shadow-sm"
-                          : "border-gray-100 bg-white hover:border-gray-300"
-                      }`}
+                      className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer group ${selectedAddressId === addr.id
+                        ? "border-indigo-600 bg-indigo-50/20 shadow-sm"
+                        : "border-gray-100 bg-white hover:border-gray-300"
+                        }`}
                     >
                       <div className="flex items-start gap-3">
                         <div
-                          className={`mt-1 w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                            selectedAddressId === addr.id
-                              ? "border-indigo-600"
-                              : "border-gray-300"
-                          }`}
+                          className={`mt-1 w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${selectedAddressId === addr.id
+                            ? "border-indigo-600"
+                            : "border-gray-300"
+                            }`}
                         >
                           {selectedAddressId === addr.id && (
                             <div className="w-2 h-2 rounded-full bg-indigo-600" />
@@ -438,11 +433,10 @@ dispatch(clearCart());
                                 {addr.name}
                               </span>
                               <span
-                                className={`text-[10px] px-1.5 py-0.5 rounded text-xs font-bold ${
-                                  addr.type === "HOME"
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-blue-100 text-blue-700"
-                                }`}
+                                className={`text-[10px] px-1.5 py-0.5 rounded text-xs font-bold ${addr.type === "HOME"
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-blue-100 text-blue-700"
+                                  }`}
                               >
                                 {addr.type}
                               </span>
@@ -572,10 +566,9 @@ dispatch(clearCart());
                       <div
                         onClick={() => setPaymentMethod(method.id)}
                         className={`p-4 rounded-xl border cursor-pointer flex items-center gap-4 transition-all
-                          ${
-                            paymentMethod === method.id
-                              ? "border-indigo-600 bg-indigo-50/30 ring-1 ring-indigo-600 z-10"
-                              : "border-gray-200 bg-white"
+                          ${paymentMethod === method.id
+                            ? "border-indigo-600 bg-indigo-50/30 ring-1 ring-indigo-600 z-10"
+                            : "border-gray-200 bg-white"
                           }`}
                       >
                         <div
@@ -592,11 +585,10 @@ dispatch(clearCart());
                           </p>
                         </div>
                         <div
-                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                            paymentMethod === method.id
-                              ? "border-indigo-600"
-                              : "border-gray-300"
-                          }`}
+                          className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === method.id
+                            ? "border-indigo-600"
+                            : "border-gray-300"
+                            }`}
                         >
                           {paymentMethod === method.id && (
                             <div className="w-2.5 h-2.5 rounded-full bg-indigo-600" />
@@ -611,21 +603,19 @@ dispatch(clearCart());
                           <div className="flex gap-3 mb-4">
                             <button
                               onClick={() => setSelectedUpiApp("gpay")}
-                              className={`flex-1 py-2 px-3 rounded-lg border flex items-center justify-center gap-2 font-bold text-sm transition-all ${
-                                selectedUpiApp === "gpay"
-                                  ? "bg-white border-indigo-600 text-indigo-700 shadow-sm"
-                                  : "bg-white border-gray-200 text-gray-600"
-                              }`}
+                              className={`flex-1 py-2 px-3 rounded-lg border flex items-center justify-center gap-2 font-bold text-sm transition-all ${selectedUpiApp === "gpay"
+                                ? "bg-white border-indigo-600 text-indigo-700 shadow-sm"
+                                : "bg-white border-gray-200 text-gray-600"
+                                }`}
                             >
                               <span className="text-blue-500">G</span>Pay
                             </button>
                             <button
                               onClick={() => setSelectedUpiApp("phonepe")}
-                              className={`flex-1 py-2 px-3 rounded-lg border flex items-center justify-center gap-2 font-bold text-sm transition-all ${
-                                selectedUpiApp === "phonepe"
-                                  ? "bg-purple-50 border-purple-600 text-purple-700 shadow-sm"
-                                  : "bg-white border-gray-200 text-gray-600"
-                              }`}
+                              className={`flex-1 py-2 px-3 rounded-lg border flex items-center justify-center gap-2 font-bold text-sm transition-all ${selectedUpiApp === "phonepe"
+                                ? "bg-purple-50 border-purple-600 text-purple-700 shadow-sm"
+                                : "bg-white border-gray-200 text-gray-600"
+                                }`}
                             >
                               PhonePe
                             </button>
@@ -773,8 +763,8 @@ dispatch(clearCart());
                   currentStep === 1
                     ? setCurrentStep(2)
                     : currentStep === 2
-                    ? setCurrentStep(3)
-                    : handlePayment()
+                      ? setCurrentStep(3)
+                      : handlePayment()
                 }
                 disabled={
                   isProcessing || (currentStep === 1 && addresses.length === 0)
@@ -867,11 +857,10 @@ dispatch(clearCart());
                     onClick={() =>
                       setNewAddress({ ...newAddress, type: "HOME" })
                     }
-                    className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border font-bold text-sm transition-all ${
-                      newAddress.type === "HOME"
-                        ? "border-indigo-600 bg-indigo-50 text-indigo-700"
-                        : "border-gray-200 text-gray-600"
-                    }`}
+                    className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border font-bold text-sm transition-all ${newAddress.type === "HOME"
+                      ? "border-indigo-600 bg-indigo-50 text-indigo-700"
+                      : "border-gray-200 text-gray-600"
+                      }`}
                   >
                     <Home size={16} /> Home
                   </button>
@@ -880,11 +869,10 @@ dispatch(clearCart());
                     onClick={() =>
                       setNewAddress({ ...newAddress, type: "WORK" })
                     }
-                    className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border font-bold text-sm transition-all ${
-                      newAddress.type === "WORK"
-                        ? "border-indigo-600 bg-indigo-50 text-indigo-700"
-                        : "border-gray-200 text-gray-600"
-                    }`}
+                    className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border font-bold text-sm transition-all ${newAddress.type === "WORK"
+                      ? "border-indigo-600 bg-indigo-50 text-indigo-700"
+                      : "border-gray-200 text-gray-600"
+                      }`}
                   >
                     <Briefcase size={16} /> Work
                   </button>
@@ -915,8 +903,8 @@ dispatch(clearCart());
               currentStep === 1
                 ? setCurrentStep(2)
                 : currentStep === 2
-                ? setCurrentStep(3)
-                : handlePayment()
+                  ? setCurrentStep(3)
+                  : handlePayment()
             }
             disabled={isProcessing}
             className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold text-sm shadow-md active:scale-95 transition-all"

@@ -44,6 +44,7 @@ const App = () => {
   return (
     <Router>
       <ToastProvider>
+
         <ScrollToTop />
         <div className="min-h-screen flex flex-col bg-gray-50 text-slate-900">
           <Navbar />
@@ -326,8 +327,8 @@ const App = () => {
                       </span>
                     </p>
                     <div className="flex items-center gap-6 text-sm text-slate-500">
-                     
-                                          </div>
+
+                    </div>
                   </div>
                 </div>
               </div>
@@ -335,7 +336,7 @@ const App = () => {
           </footer>
         </div>
       </ToastProvider>
-    </Router>
+    </Router >
   );
 };
 

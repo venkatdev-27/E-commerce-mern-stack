@@ -171,40 +171,55 @@ const OrderTrackingPage = () => {
   }, {});
 
   // Calculate item details with discounts
+  // Calculate item details with discounts
   const itemDetails = items.map(item => {
     const discountPercent = productDiscounts[item.product] || 0;
+
+    // Original Price (Sticker Price)
     const originalPrice = item.price;
+
     const discountAmount = originalPrice * (discountPercent / 100);
     const discountedPrice = originalPrice - discountAmount;
+
+    const totalOriginalPrice = originalPrice * item.quantity;
     const totalDiscount = discountAmount * item.quantity;
-    const totalPrice = discountedPrice * item.quantity;
+    const totalDiscountedPrice = discountedPrice * item.quantity;
 
     return {
       ...item,
       discountPercent,
       discountAmount,
       discountedPrice,
+      originalPrice,
+      totalOriginalPrice,
       totalDiscount,
-      totalPrice,
+      totalDiscountedPrice,
     };
   });
 
-  // Calculate totals
-  const subtotal = itemDetails.reduce((sum, item) => sum + item.totalPrice, 0);
+  // 1. Gross Subtotal (Sum of Original Prices)
+  const subtotal = itemDetails.reduce((sum, item) => sum + item.totalOriginalPrice, 0);
   const totalDiscount = itemDetails.reduce((sum, item) => sum + item.totalDiscount, 0);
 
-  // Delivery charges based on subtotal (after discount)
+  // 2. Net Taxable Amount
+  const discountedSubtotal = subtotal - totalDiscount;
+
+  // 3. Tax (GST 18%)
+  const GST_RATE = 0.18;
+  const gstAmount = discountedSubtotal * GST_RATE;
+
+  // 4. Delivery charges (based on discounted value)
   let delivery = 0;
-  if (subtotal < 500) {
-    delivery = Math.floor(Math.random() * 31) + 40; // ₹40 - ₹70
-  } else if (subtotal < 1000) {
-    delivery = Math.floor(Math.random() * 21) + 20; // ₹20 - ₹40
+  if (discountedSubtotal < 500) {
+    delivery = Math.floor(Math.random() * 31) + 40;
+  } else if (discountedSubtotal < 1000) {
+    delivery = Math.floor(Math.random() * 21) + 20;
   } else {
-    delivery = 0; // Free delivery
+    delivery = 0;
   }
 
-  // Final total
-  const calculatedTotal = subtotal + delivery;
+  // 5. Final Total
+  const calculatedTotal = discountedSubtotal + gstAmount + delivery;
 
   /* ======================================================
      TRACKING STEPS CONFIGURATION
@@ -275,11 +290,10 @@ const OrderTrackingPage = () => {
               {steps.map((step, idx) => (
                 <div key={idx} className="flex items-start gap-4">
                   <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                      step.done
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-200 text-gray-400"
-                    }`}
+                    className={`w-12 h-12 rounded-full flex items-center justify-center ${step.done
+                      ? "bg-indigo-600 text-white"
+                      : "bg-gray-200 text-gray-400"
+                      }`}
                   >
                     <step.icon size={18} />
                   </div>
@@ -321,15 +335,15 @@ const OrderTrackingPage = () => {
                   {item.discountPercent > 0 && (
                     <>
                       <p className="text-sm text-green-600">
-                        Discount: {item.discountPercent}% off (₹{item.discountAmount.toFixed(2)})
+                        Discount: {item.discountPercent}% off
                       </p>
                       <p className="text-sm text-gray-500">
-                        Discounted: ₹{item.discountedPrice.toFixed(2)}
+
                       </p>
                     </>
                   )}
                 </div>
-                <p className="font-bold">₹{item.totalPrice.toFixed(2)}</p>
+                <p className="font-bold">₹{item.totalOriginalPrice.toFixed(2)}</p>
               </div>
             ))}
           </div>
@@ -337,22 +351,18 @@ const OrderTrackingPage = () => {
           {/* ORDER TOTAL */}
           <div className="space-y-2 border-t pt-4">
             <div className="flex justify-between">
-              <span>Subtotal</span>
+              <span>Total Amount </span>
               <span>₹{subtotal.toFixed(2)}</span>
             </div>
-            {totalDiscount > 0 && (
-              <div className="flex justify-between">
-                <span>Discount</span>
-                <span className="text-green-600">-₹{totalDiscount.toFixed(2)}</span>
-              </div>
-            )}
-            <div className="flex justify-between">
-              <span>Tax</span>
-              <span>₹{delivery.toFixed(2)}</span>
+                      <div className="flex justify-between">
+              <span>Delivery Charges</span>
+              <span className={delivery === 0 ? "text-green-600 font-bold" : ""}>
+                {delivery === 0 ? "Free" : `₹${delivery.toFixed(2)}`}
+              </span>
             </div>
-            <div className="flex justify-between font-bold border-t pt-2">
-              <span>Total</span>
-              <span>₹{calculatedTotal.toFixed(2)}</span>
+            <div className="flex justify-between font-bold border-t pt-2 text-lg">
+              <span>Final Amount</span>
+              <span>₹{subtotal.toFixed(2)}</span>
             </div>
           </div>
 
