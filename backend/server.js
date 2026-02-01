@@ -8,7 +8,7 @@ const connectDB = require("./config/db");
 const app = express();
 
 /* =========================
-   ✅ CORS (FIXED FOR RENDER)
+   ✅ CORS (PRODUCTION READY)
 ========================= */
 const allowedOrigins = [
   "http://localhost:5173",
@@ -19,16 +19,30 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log("Blocked by CORS:", origin);
-      callback(new Error("Not allowed by CORS"));
+    console.log("🔍 Request Origin:", origin);
+    
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) {
+      console.log("✅ No origin - allowing request");
+      return callback(null, true);
     }
+    
+    // Check if origin is in whitelist
+    if (allowedOrigins.includes(origin)) {
+      console.log("✅ Origin allowed:", origin);
+      return callback(null, true);
+    }
+    
+    console.log("❌ Origin blocked:", origin);
+    callback(new Error("Not allowed by CORS"));
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+  exposedHeaders: ["Content-Length", "X-Total-Count"],
+  maxAge: 86400, // 24 hours
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 };
 
 app.use(cors(corsOptions));
