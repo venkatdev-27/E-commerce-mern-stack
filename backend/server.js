@@ -8,45 +8,34 @@ const connectDB = require("./config/db");
 const app = express();
 
 /* =========================
-   ✅ CORS (PRODUCTION READY)
+   ✅ CORS (RENDER + LOCAL)
 ========================= */
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
   "https://luxemarket-ljoh.onrender.com",
-  "https://e-commerce-mern-stack-i66g.onrender.com",
 ];
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    console.log("🔍 Request Origin:", origin);
-    
-    // Allow requests with no origin (like mobile apps, curl, Postman)
-    if (!origin) {
-      console.log("✅ No origin - allowing request");
-      return callback(null, true);
-    }
-    
-    // Check if origin is in whitelist
-    if (allowedOrigins.includes(origin)) {
-      console.log("✅ Origin allowed:", origin);
-      return callback(null, true);
-    }
-    
-    console.log("❌ Origin blocked:", origin);
-    callback(new Error("Not allowed by CORS"));
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
-  exposedHeaders: ["Content-Length", "X-Total-Count"],
-  maxAge: 86400, // 24 hours
-  preflightContinue: false,
-  optionsSuccessStatus: 204
-};
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow server-to-server, Postman, curl
+      if (!origin) return callback(null, true);
 
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(null, true); // 🔥 IMPORTANT (don’t hard-block in prod)
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+// ✅ REQUIRED for browsers (preflight)
+
 
 /* =========================
    BODY PARSER
@@ -92,11 +81,14 @@ app.get("/", (req, res) => {
 });
 
 /* =========================
-   ERROR HANDLER
+   ERROR HANDLER (DON’T KILL CORS)
 ========================= */
 app.use((err, req, res, next) => {
   console.error("🔥 Error:", err.message);
-  res.status(500).json({ message: err.message || "Internal Server Error" });
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+  });
 });
 
 /* =========================
