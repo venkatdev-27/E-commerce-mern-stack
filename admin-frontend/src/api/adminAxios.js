@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const adminAxios = axios.create({
-  baseURL: import.meta.env.VITE_ADMIN_API_BASE_URL,
+  baseURL: import.meta.env.VITE_ADMIN_API_BASE_URL || "http://localhost:5000/api/admin",
   headers: {
     "Content-Type": "application/json"
   }
