@@ -4,27 +4,49 @@ const path = require("path");
 require("dotenv").config();
 
 const connectDB = require("./config/db");
+
 const app = express();
 
 /* =========================
-   MIDDLEWARE
+   CORS (MUST BE FIRST)
 ========================= */
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:3000",
-    "http://localhost:5175",
-    "http://localhost:5176",
-    "http://localhost:5178",
-    "http://localhost:3001",
-    "http://localhost:3002",
-    "http://localhost:3003",
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3002",
+  "http://localhost:3003",
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175",
+  "http://localhost:5176",
+  "http://localhost:5178",
+  "https://luxemarket-ljoh.onrender.com"
+];
 
-  ],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // allow requests with no origin (Postman, curl)
+      if (!origin) return callback(null, true);
 
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+// ✅ IMPORTANT: handle preflight requests
+app.options("*", cors());
+
+/* =========================
+   BODY PARSER
+========================= */
 app.use(express.json({ limit: "10mb" }));
 
 /* =========================
@@ -38,9 +60,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 connectDB();
 
 /* =========================
-   ROUTES
+   USER ROUTES
 ========================= */
-// User
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));
 app.use("/api/categories", require("./routes/categoryRoutes"));
@@ -48,7 +69,9 @@ app.use("/api/wishlist", require("./routes/wishlistRoutes"));
 app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api/support", require("./routes/supportRoutes"));
 
-// Admin
+/* =========================
+   ADMIN ROUTES
+========================= */
 app.use("/api/admin/auth", require("./admin/routes/adminAuthRoutes"));
 app.use("/api/admin/products", require("./admin/routes/adminProductRoutes"));
 app.use("/api/admin/categories", require("./admin/routes/adminCategoryRoutes"));
@@ -68,14 +91,14 @@ app.get("/", (req, res) => {
    ERROR HANDLER
 ========================= */
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: "Internal Server Error" });
+  console.error("🔥 Error:", err.message);
+  res.status(500).json({ message: err.message || "Internal Server Error" });
 });
 
 /* =========================
    SERVER
 ========================= */
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(`🚀 Server running on port ${PORT}`)
-);
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
