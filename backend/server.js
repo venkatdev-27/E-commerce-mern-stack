@@ -8,22 +8,17 @@ const connectDB = require("./config/db");
 const app = express();
 
 /* =========================
-   ✅ CORS (RENDER SAFE)
+   ✅ CORS (RENDER + PROD SAFE)
 ========================= */
-app.use(
-  cors({
-    origin: "https://luxemarket-ljoh.onrender.com", // ✅ frontend URL
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
-// ✅ Preflight (must use SAME config)
-app.options("*", cors({
-  origin: "https://luxemarket-ljoh.onrender.com",
+const corsOptions = {
+  origin: true, // 🔥 allow all origins dynamically
   credentials: true,
-}));
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 /* =========================
    BODY PARSER
@@ -73,7 +68,7 @@ app.get("/", (req, res) => {
 ========================= */
 app.use((err, req, res, next) => {
   console.error("🔥 Error:", err.message);
-  res.status(500).json({ message: err.message });
+  res.status(500).json({ message: err.message || "Internal Server Error" });
 });
 
 /* =========================
