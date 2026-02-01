@@ -8,43 +8,31 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
 
-    /* =========================
-       DEV SERVER (LOCAL ONLY)
-    ========================= */
     server: {
-      port: 3002,
       host: "0.0.0.0",
+      port: 4173,
       hmr: false,
     },
 
-    /* =========================
-       PREVIEW SERVER (RENDER)
-    ========================= */
+    // 🔥 THIS IS THE IMPORTANT PART
     preview: {
-      host: true,
+      host: "0.0.0.0",
       port: 4173,
-      allowedHosts: "all", // ✅ FIXES 403 ON RENDER
+      allowedHosts: [
+        "luxemarket-ljoh.onrender.com"
+      ],
     },
 
-    /* =========================
-       ENV DEFINITIONS
-    ========================= */
     define: {
       "process.env.GEMINI_API_KEY": JSON.stringify(env.GEMINI_API_KEY),
     },
 
-    /* =========================
-       PATH ALIAS
-    ========================= */
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "src"),
       },
     },
 
-    /* =========================
-       BUILD CONFIG
-    ========================= */
     build: {
       outDir: "build",
       emptyOutDir: true,
