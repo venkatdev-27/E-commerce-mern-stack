@@ -1,8 +1,19 @@
 import axios from "axios";
 
+
+
+const BASE_URL =  import.meta.env.VITE_ADMIN_API_BASE_URL || "http://localhost:5000";
+
+
+
+if (!BASE_URL) {
+  console.error("❌ VITE_API_URL is not defined. Check Render env variables.");
+}
+
+
 const adminAxios = axios.create({
-  baseURL: import.meta.env.VITE_ADMIN_API_BASE_URL || "http://localhost:5000/api/admin",
-  headers: {
+  baseURL: `${BASE_URL}/api/admin`,
+ headers: {
     "Content-Type": "application/json"
   }
 });
