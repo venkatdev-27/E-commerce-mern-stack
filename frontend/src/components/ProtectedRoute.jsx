@@ -6,9 +6,9 @@ const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const location = useLocation();
 
-  if (!isAuthenticated || !user) {
+  if (!isAuthenticated) {
     // Redirect to login page with return url
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   }
 
   return children;

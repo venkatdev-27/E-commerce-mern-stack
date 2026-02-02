@@ -29,7 +29,7 @@ import Beauty from "@/pages/Beauty.jsx";
 import Sports from "@/pages/Sports.jsx";
 import Accessories from "@/pages/Accessories.jsx";
 import ProtectedRoute from "@/components/ProtectedRoute.jsx";
-import { ToastProvider } from "@/context/ToastContext";
+
 
 // Scroll to top on route change
 const ScrollToTop = () => {
