@@ -4,17 +4,19 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-
-  return {
+  const isProduction = mode === "production";
+  return {  
     plugins: [react()],
 
-    server: {
+    server:!isProduction ? {
       host: "0.0.0.0",
-      port: 4173,
-      hmr: false,  
+      port: 5173,
+      hmr: !isProduction,  
+      
 
 
-    },
+    }
+    :undefined,
 
     // 🔥 THIS IS THE IMPORTANT PART
     preview: {
