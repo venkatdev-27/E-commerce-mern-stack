@@ -7,6 +7,7 @@ import HomeSkeleton from '@/components/skeletons/HomeSkeleton.jsx';
 import { getHomePageData } from '@/api';
 import { CATEGORIES } from '@/constants/categories';
 import { useToast } from '@/context/ToastContext';
+import Countdown from 'react-countdown';
 
 // Static Data: Slides
 const slides = [

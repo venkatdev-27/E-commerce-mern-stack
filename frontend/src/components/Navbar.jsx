@@ -62,7 +62,7 @@ const Navbar = () => {
 useEffect(() => {
   const loadCategories = async () => {
     try {
-
+      const response = await getCategories();
 
       const defaultCategories = [
         { id: "men-clothes", name: "Men's Fashion" },
@@ -75,7 +75,19 @@ useEffect(() => {
         { id: "accessories", name: "Accessories" },
       ];
 
-     
+      const dbCategories = (response || []).map((cat) => ({
+        id: cat.name.toLowerCase().replace(/\s+/g, "-"),
+        name: cat.name,
+        image: cat.image,
+      }));
+
+      // ✅ DEFINE BEFORE USE
+      const categoryMap = new Map();
+
+      [...defaultCategories, ...dbCategories].forEach((cat) => {
+        categoryMap.set(cat.id, cat);
+      });
+
       setCategories([
         { id: "all", name: "All Products" },
         { id: "recommended", name: "Recommended" },
