@@ -12,6 +12,10 @@ export default defineConfig(({ mode }) => {
       host: "0.0.0.0",
       port: 4173,
       hmr: false,  
+            fs: {
+        allow: [".."],         // 🔥 REQUIRED (features is outside src)
+      },
+
     },
 
     // 🔥 THIS IS THE IMPORTANT PART
@@ -32,6 +36,7 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve(__dirname, "src"),
       },
     },
+    
 
     build: {
       outDir: "build",
