@@ -29,7 +29,7 @@ import {
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { logout } from "@/store/authSlice";
 import { useToast } from "@/context/ToastContext";
-import { getProducts, getCategories } from "@/api";
+import { getProducts } from "@/api";
 
 const Navbar = () => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
@@ -62,7 +62,7 @@ const Navbar = () => {
 useEffect(() => {
   const loadCategories = async () => {
     try {
-      const response = await getCategories();
+
 
       const defaultCategories = [
         { id: "men-clothes", name: "Men's Fashion" },
@@ -75,17 +75,7 @@ useEffect(() => {
         { id: "accessories", name: "Accessories" },
       ];
 
-      const dbCategories = (response || []).map((cat) => ({
-        id: cat.name.toLowerCase().replace(/\s+/g, "-"),
-        name: cat.name,
-        image: cat.image,
-      }));
-
-      const categoryMap = new Map();
-      [...defaultCategories, ...dbCategories].forEach((cat) =>
-        categoryMap.set(cat.id, cat)
-      );
-
+     
       setCategories([
         { id: "all", name: "All Products" },
         { id: "recommended", name: "Recommended" },
@@ -663,27 +653,43 @@ const getCategoryIcon = (category) => {
       </div>
 
       {/* Auth */}
-      <div className="border-t px-4 py-4">
-        {isAuthenticated ? (
-          <button
-            onClick={() => {
-              handleLogout();
-              setIsMenuOpen(false);
-            }}
-            className="w-full py-2.5 bg-red-50 text-red-600 font-bold rounded-lg"
-          >
-            Logout
-          </button>
-        ) : (
-          <Link
-            to="/login"
-            onClick={() => setIsMenuOpen(false)}
-            className="block text-center py-2.5 bg-slate-900 text-white font-bold rounded-lg"
-          >
-            Login / Sign Up
-          </Link>
-        )}
+    <div className="border-t px-4 py-4">
+  {isAuthenticated && user ? (
+    <>
+      {/* PROFILE (AVATAR + NAME ONLY) */}
+      <div className="flex items-center gap-3 p-3 mb-3 bg-gray-50 rounded-xl">
+        <img
+          src={user.avatar || "/avatar-placeholder.png"}
+          alt={user.name}
+          className="w-10 h-10 rounded-full border object-cover"
+        />
+        <p className="font-bold text-gray-900 text-sm truncate">
+          {user.name}
+        </p>
       </div>
+
+      {/* LOGOUT */}
+      <button
+        onClick={() => {
+          handleLogout();
+          setIsMenuOpen(false);
+        }}
+        className="w-full py-2.5 bg-red-50 text-red-600 font-bold rounded-lg"
+      >
+        Logout
+      </button>
+    </>
+  ) : (
+    <Link
+      to="/login"
+      onClick={() => setIsMenuOpen(false)}
+      className="block text-center py-2.5 bg-slate-900 text-white font-bold rounded-lg"
+    >
+      Login / Sign Up
+    </Link>
+  )}
+</div>
+
     </div>
   </div>
 )}
