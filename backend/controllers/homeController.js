@@ -33,7 +33,7 @@ exports.getHomePageData = async (req, res) => {
        PROJECTION (HOME PAGE ONLY)
     ========================= */
     const projection =
-      "_id name price image rating discount category brand";
+      "_id name price image rating reviews discount category brand";
 
     /* =========================
        QUERY HELPER
