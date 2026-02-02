@@ -163,6 +163,15 @@ function Login() {
               </button>
             </div>
 
+            <div className="flex justify-end">
+              <Link
+                to="/forgot-password"
+                className="text-sm text-blue-600 hover:underline"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+
             {error && <p className="text-red-600 text-sm">{error}</p>}
 
             <button className="w-full bg-blue-600 text-white py-3 rounded-lg">
@@ -241,6 +250,16 @@ function Login() {
             </button>
           </form>
         )}
+
+        <div className="mt-6 text-center text-sm text-slate-600">
+          Don't have an account?{" "}
+          <Link
+            to="/signup"
+            className="text-blue-600 font-semibold hover:underline"
+          >
+            Sign up
+          </Link>
+        </div>
       </div>
     </div>
   );
