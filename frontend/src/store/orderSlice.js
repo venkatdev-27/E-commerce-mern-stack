@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { placeOrder, getOrders, getOrderById } from "@/api";
-import { logout } from "./authSlice";
+import { logout } from "@/store/authSlice";
 
 const initialState = {
   orders: [],

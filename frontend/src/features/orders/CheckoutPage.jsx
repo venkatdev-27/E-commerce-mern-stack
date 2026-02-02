@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../../store/store.js";
-import { clearCart, removeFromCart, updateQuantity } from "../../store/cartSlice.js";
-import { placeOrderAsync } from "../../store/orderSlice.js";
-import { useToast } from "../../context/ToastContext.jsx";
+import { useAppDispatch, useAppSelector } from "@/store/store.js";
+import { clearCart, removeFromCart, updateQuantity } from "@/store/cartSlice.js";
+import { placeOrderAsync } from "@/store/orderSlice.js";
+import { useToast } from "@/context/ToastContext.jsx";
 import {
   Plus,
   Minus,

@@ -1,5 +1,5 @@
 import React from 'react';
-import ShopPage from '../../features/products/ShopPage';
+import ShopPage from '@/features/products/ShopPage';
 
 const Accessories = () => {
   return <ShopPage />;

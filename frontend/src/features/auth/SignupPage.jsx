@@ -2,9 +2,9 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { Eye, EyeOff } from "lucide-react";
-import axiosInstance from "../../api/axiosInstance.js";
-import { login } from "../../store/authSlice";
-import { useToast } from "../../context/ToastContext";
+import axiosInstance from "@/api/axiosInstance.js";
+import { login } from "@/store/authSlice";
+import { useToast } from "@/context/ToastContext";
 
 const Signup = () => {
   const [name, setName] = useState("");

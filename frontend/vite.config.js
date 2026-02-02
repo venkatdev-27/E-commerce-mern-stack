@@ -12,9 +12,7 @@ export default defineConfig(({ mode }) => {
       host: "0.0.0.0",
       port: 4173,
       hmr: false,  
-            fs: {
-        allow: [".."],         // 🔥 REQUIRED (features is outside src)
-      },
+
 
     },
 

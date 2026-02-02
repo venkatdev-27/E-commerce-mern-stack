@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProducts } from '../../store/productsSlice';
-import ProductGrid from '../../components/ProductGrid';
+import { fetchProducts } from '@/store/productsSlice';
+import ProductGrid from '@/components/ProductGrid';
 
 const Home = () => {
   const dispatch = useDispatch();

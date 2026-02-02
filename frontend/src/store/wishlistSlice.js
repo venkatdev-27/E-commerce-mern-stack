@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { getWishlist, addToWishlist, removeFromWishlist } from "@/api";
-import { logout } from "./authSlice";
+import { logout } from "@/store/authSlice";
 
 const initialState = {
   items: [],

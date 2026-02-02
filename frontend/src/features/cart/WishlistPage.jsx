@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "../../store/store";
+import { useAppSelector, useAppDispatch } from "@/store/store";
 import {
   fetchWishlist,
   removeFromWishlistAsync,
-} from "../../store/wishlistSlice";
-import { logout } from "../../store/authSlice";
-import ProductCard from "../../components/ProductCard";
+} from "@/store/wishlistSlice";
+import { logout } from "@/store/authSlice";
+import ProductCard from "@/components/ProductCard";
 import { Link, useNavigate } from "react-router-dom";
 import { Heart, Loader2 } from "lucide-react";
 

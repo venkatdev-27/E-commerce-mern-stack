@@ -8,8 +8,8 @@ import {
   KeyRound,
   Lock,
 } from "lucide-react";
-import { useToast } from "../../context/ToastContext";
-import { forgotPassword, verifyResetOTP, resetPassword } from "../../src/api/auth.api";
+import { useToast } from "@/context/ToastContext";
+import { forgotPassword, verifyResetOTP, resetPassword } from "@/api/auth.api";
 
 const ForgotPasswordPage = () => {
   const [step, setStep] = useState(1); // 1: email, 2: otp, 3: new password

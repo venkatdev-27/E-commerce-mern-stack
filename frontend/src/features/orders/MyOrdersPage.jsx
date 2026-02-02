@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../../store/store";
-import { fetchOrders, clearOrders } from "../../store/orderSlice";
-import { submitReview } from "../../src/api/order.api";
+import { useAppDispatch, useAppSelector } from "@/store/store";
+import { fetchOrders, clearOrders } from "@/store/orderSlice";
+import { submitReview } from "@/api/order.api";
 import { Package, Clock, Search, Star } from "lucide-react";
 
 const MyOrdersPage = () => {

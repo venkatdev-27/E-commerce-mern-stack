@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, ArrowRight, ShieldCheck } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '../../store/store';
-import { removeFromCart, updateQuantity } from '../../store/cartSlice';
-import { useToast } from '../../context/ToastContext';
+import { useAppDispatch, useAppSelector } from '@/store/store';
+import { removeFromCart, updateQuantity } from '@/store/cartSlice';
+import { useToast } from '@/context/ToastContext';
 
 const CartPage = () => {
     const dispatch = useAppDispatch();

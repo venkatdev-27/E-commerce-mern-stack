@@ -9,12 +9,12 @@ import {
   ShieldCheck
 } from "lucide-react";
 
-import { getProductById } from "../../src/api";
-import { useAppDispatch, useAppSelector } from "../../store/store";
-import { addToCart } from "../../store/cartSlice";
-import { addToWishlistAsync } from "../../store/wishlistSlice";
-import { useToast } from "../../context/ToastContext";
-import PriceDisplay from "../../components/PriceDisplay.jsx";
+import { getProductById } from "@/src/api";
+import { useAppDispatch, useAppSelector } from "@/store/store";
+import { addToCart } from "@/store/cartSlice";
+import { addToWishlistAsync } from "@/store/wishlistSlice";
+import { useToast } from "@/context/ToastContext";
+import PriceDisplay from "@/components/PriceDisplay.jsx";
 
 const ProductDetailsPage = () => {
   const { id } = useParams();

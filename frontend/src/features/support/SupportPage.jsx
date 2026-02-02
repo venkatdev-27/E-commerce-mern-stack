@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail, Phone, Send, MessageCircle, HelpCircle } from "lucide-react";
-import { useToast } from "../../context/ToastContext";
-import { submitSupportMessage } from "../../src/api/support.api";
+import { useToast } from "@/context/ToastContext";
+import { submitSupportMessage } from "@/api/support.api";
 
 const SupportPage = () => {
   const { addToast } = useToast();

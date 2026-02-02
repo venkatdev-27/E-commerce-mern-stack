@@ -9,9 +9,9 @@ import {
   ArrowRight,
   Loader2,
 } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "../../store/store";
-import { fetchOrderById } from "../../store/orderSlice";
-import { getProductById } from "../../src/api/product.api";
+import { useAppDispatch, useAppSelector } from "@/store/store";
+import { fetchOrderById } from "@/store/orderSlice";
+import { getProductById } from "@/api/product.api";
 
 /* ======================================================
    DATE HELPERS (IST - Asia/Kolkata)

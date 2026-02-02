@@ -1,9 +1,9 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import React, {  useReducer, useEffect, useState } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
-import ProductCard from "../../components/ProductCard.jsx";
-import { getProducts, getBrands } from "../../src/api";
-import { getCategoryName } from "../../src/constants/categories";
+import ProductCard from "@/components/ProductCard.jsx";
+import { getProducts, getBrands } from "@/api";
+import { getCategoryName } from "@/constants/categories";
 import { SearchX, Home,  ChevronDown } from "lucide-react";
 
 const initialState = {

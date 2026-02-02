@@ -6,30 +6,30 @@ import {
   useLocation,
   Link,
 } from "react-router-dom";
-import Navbar from "./components/Navbar.jsx";
-import HomePage from "./features/products/HomePage.jsx";
-import ShopPage from "./features/products/ShopPage.jsx";
-import ProductDetailsPage from "./features/products/ProductDetailsPage.jsx";
-import CartPage from "./features/cart/CartPage.jsx";
-import WishlistPage from "./features/cart/WishlistPage.jsx";
-import LoginPage from "./features/auth/LoginPage.jsx";
-import SignupPage from "./features/auth/SignupPage.jsx";
-import ForgotPasswordPage from "./features/auth/ForgotPasswordPage.jsx";
-import CheckoutPage from "./features/orders/CheckoutPage.jsx";
-import OrderTrackingPage from "./features/orders/OrderTrackingPage.jsx";
-import MyOrdersPage from "./features/orders/MyOrdersPage.jsx";
-import PrivacyPolicyPage from "./features/support/PrivacyPolicyPage.jsx";
-import SupportPage from "./features/support/SupportPage.jsx";
-import MenClothes from "./src/pages/MenClothes.jsx";
-import WomenClothes from "./src/pages/WomenClothes.jsx";
-import Electronics from "./src/pages/Electronics.jsx";
-import Footwear from "./src/pages/Footwear.jsx";
-import Home from "./src/pages/Home.jsx";
-import Beauty from "./src/pages/Beauty.jsx";
-import Sports from "./src/pages/Sports.jsx";
-import Accessories from "./src/pages/Accessories.jsx";
-import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import { ToastProvider } from "./context/ToastContext";
+import Navbar from "@/components/Navbar.jsx";
+import HomePage from "@/features/products/HomePage.jsx";
+import ShopPage from "@/features/products/ShopPage.jsx";
+import ProductDetailsPage from "@/features/products/ProductDetailsPage.jsx";
+import CartPage from "@/features/cart/CartPage.jsx";
+import WishlistPage from "@/features/cart/WishlistPage.jsx";
+import LoginPage from "@/features/auth/LoginPage.jsx";
+import SignupPage from "@/features/auth/SignupPage.jsx";
+import ForgotPasswordPage from "@/features/auth/ForgotPasswordPage.jsx";
+import CheckoutPage from "@/features/orders/CheckoutPage.jsx";
+import OrderTrackingPage from "@/features/orders/OrderTrackingPage.jsx";
+import MyOrdersPage from "@/features/orders/MyOrdersPage.jsx";
+import PrivacyPolicyPage from "@/features/support/PrivacyPolicyPage.jsx";
+import SupportPage from "@/features/support/SupportPage.jsx";
+import MenClothes from "@/pages/MenClothes.jsx";
+import WomenClothes from "@/pages/WomenClothes.jsx";
+import Electronics from "@/pages/Electronics.jsx";
+import Footwear from "@/pages/Footwear.jsx";
+import Home from "@/pages/Home.jsx";
+import Beauty from "@/pages/Beauty.jsx";
+import Sports from "@/pages/Sports.jsx";
+import Accessories from "@/pages/Accessories.jsx";
+import ProtectedRoute from "@/components/ProtectedRoute.jsx";
+import { ToastProvider } from "@/context/ToastContext";
 
 // Scroll to top on route change
 const ScrollToTop = () => {
@@ -43,7 +43,7 @@ const ScrollToTop = () => {
 const App = () => {
   return (
     <Router>
-      <ToastProvider>
+        <ToastProvider>
 
         <ScrollToTop />
         <div className="min-h-screen flex flex-col bg-gray-50 text-slate-900">
@@ -69,11 +69,6 @@ const App = () => {
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/checkout" element={<CheckoutPage />} />
-              <Route
-                path="/order-tracking/:id"
-                element={<OrderTrackingPage />}
-              />
-              <Route path="/order-tracking" element={<OrderTrackingPage />} />
               <Route path="/privacy" element={<PrivacyPolicyPage />} />
               <Route path="/support" element={<SupportPage />} />
             </Routes>
