@@ -1,7 +1,6 @@
 import React, { useState, useEffect,useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Truck, Shield, Clock, RotateCcw, Zap, TrendingUp } from 'lucide-react';
-import Countdown from 'react-countdown';
 import ProductCard from '@/components/ProductCard.jsx';
 import HomeSkeleton from '@/components/skeletons/HomeSkeleton.jsx';
 import { getHomePageData } from '@/api';
