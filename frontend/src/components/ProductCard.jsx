@@ -1,13 +1,13 @@
 import React, { memo } from "react";
 import { Heart, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../store/store";
+import { useAppDispatch, useAppSelector } from "@/store/store";
 import {
   addToWishlistAsync,
   removeFromWishlistAsync,
-} from "../store/wishlistSlice";
-import { useToast } from "../context/ToastContext.jsx";
-import PriceDisplay from "./PriceDisplay.jsx";
+} from "@/store/wishlistSlice";
+import { useToast } from "@/context/ToastContext.jsx";
+import PriceDisplay from "@/components/PriceDisplay.jsx";
 
 const ProductCard = memo(({ product }) => {
   const dispatch = useAppDispatch();

@@ -9,7 +9,7 @@ import {
   ShieldCheck
 } from "lucide-react";
 
-import { getProductById } from "@/src/api";
+import { getProductById } from "@/api";
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { addToCart } from "@/store/cartSlice";
 import { addToWishlistAsync } from "@/store/wishlistSlice";
