@@ -1,25 +1,56 @@
-import axiosInstance from './axiosInstance';
+import axiosInstance from "./axiosInstance";
 
 /* =========================
    AUTH API
 ========================= */
-export const login = (credentials) =>
-  axiosInstance.post("/auth/login", credentials);
 
-export const register = (userData) =>
-  axiosInstance.post("/auth/signup", userData);
+// PASSWORD LOGIN
+export const login = (credentials) => {
+  return axiosInstance.post("/auth/login", credentials);
+};
 
-export const sendOTP = (email) =>
-  axiosInstance.post("/auth/send-otp", { email });
+// SIGNUP
+export const signup = (userData) => {
+  return axiosInstance.post("/auth/signup", userData);
+};
 
-export const verifyOTP = (otpToken, otp) =>
-  axiosInstance.post("/auth/verify-otp", { otpToken, otp });
+// SEND OTP (LOGIN)
+export const sendOTP = (email) => {
+  return axiosInstance.post("/auth/send-otp", { email });
+};
 
-export const forgotPassword = (email) =>
-  axiosInstance.post("/auth/forgot-password", { email });
+// VERIFY OTP (LOGIN)
+export const verifyOTP = (otpToken, otp) => {
+  return axiosInstance.post("/auth/verify-otp", {
+    otpToken,
+    otp,
+  });
+};
 
-export const verifyResetOTP = (otpToken, otp) =>
-  axiosInstance.post("/auth/verify-reset-otp", { otpToken, otp });
+// FORGOT PASSWORD
+export const forgotPassword = (email) => {
+  return axiosInstance.post("/auth/forgot-password", { email });
+};
 
-export const resetPassword = (otpToken, otp, newPassword, confirmPassword) =>
-  axiosInstance.post("/auth/reset-password", { otpToken, otp, newPassword, confirmPassword });
+// VERIFY RESET OTP
+export const verifyResetOTP = (otpToken, otp) => {
+  return axiosInstance.post("/auth/verify-reset-otp", {
+    otpToken,
+    otp,
+  });
+};
+
+// RESET PASSWORD
+export const resetPassword = (
+  otpToken,
+  otp,
+  newPassword,
+  confirmPassword
+) => {
+  return axiosInstance.post("/auth/reset-password", {
+    otpToken,
+    otp,
+    newPassword,
+    confirmPassword,
+  });
+};

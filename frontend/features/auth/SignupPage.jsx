@@ -1,10 +1,10 @@
-import axios from "axios";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { login } from "../../store/authSlice.js";
-import { useToast } from "../../context/ToastContext.jsx";
 import { Eye, EyeOff } from "lucide-react";
+import axiosInstance from "../../api/axiosInstance";
+import { login } from "../../store/authSlice";
+import { useToast } from "../../context/ToastContext";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -13,46 +13,56 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { addToast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
-      await axios.post("http://localhost:5000/api/auth/signup", {
+      /* ================= SIGNUP ================= */
+      await axiosInstance.post("/auth/signup", {
         name,
         email,
         mobile,
         password,
       });
-      // Auto login after signup
-      const loginRes = await axios.post("http://localhost:5000/api/auth/login", {
+
+      /* ================= AUTO LOGIN ================= */
+      const loginRes = await axiosInstance.post("/auth/login", {
         email,
         password,
       });
-      localStorage.setItem("token", loginRes.data.token);
-      // Fetch user profile
-      const profileRes = await axios.get("http://localhost:5000/api/auth/profile", {
-        headers:
-         { Authorization: `Bearer ${loginRes.data.token}` }
-      });
-      dispatch(login({
-        id: profileRes.data._id,
-        name: profileRes.data.name,
-        email: profileRes.data.email,
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(profileRes.data.name)}&background=random`
-      }));
-      addToast("Account created successfully!", "success");
+
+      const token = loginRes.token;
+
+      /* ================= FETCH PROFILE ================= */
+      const profile = await axiosInstance.get("/auth/profile");
+
+      /* ================= REDUX LOGIN ================= */
+      dispatch(
+        login({
+          user: {
+            id: profile._id,
+            name: profile.name,
+            email: profile.email,
+            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+              profile.name
+            )}&background=random`,
+          },
+          token,
+        })
+      );
+
+      addToast("Account created successfully 🎉", "success");
       navigate("/");
     } catch (error) {
-      const errorMessage = error.response?.data?.message;
-      if (errorMessage === "User already exists") {
-        addToast("This email is already exist", "error");
-      } else {
-        addToast("Signup failed. Please try again.", "error");
-      }
+      const message =
+        error.response?.data?.message || "Signup failed. Try again.";
+      addToast(message, "error");
     } finally {
       setLoading(false);
     }
@@ -60,102 +70,72 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white shadow-xl rounded-2xl p-8 border border-gray-100">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
-          <p className="text-gray-600">Join us today and start shopping</p>
-        </div>
+      <div className="max-w-md w-full bg-white shadow-xl rounded-2xl p-8 border">
+        <h2 className="text-3xl font-bold text-center mb-2">Create Account</h2>
+        <p className="text-gray-600 text-center mb-6">
+          Join us today and start shopping
+        </p>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name
-            </label>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <input
+            type="text"
+            placeholder="Full Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="w-full p-3 border rounded-lg"
+          />
+
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full p-3 border rounded-lg"
+          />
+
+          <input
+            type="tel"
+            placeholder="Mobile Number"
+            value={mobile}
+            onChange={(e) => setMobile(e.target.value)}
+            required
+            className="w-full p-3 border rounded-lg"
+          />
+
+          <div className="relative">
             <input
-              id="name"
-              type="text"
-              placeholder="Enter your full name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+              className="w-full p-3 pr-10 border rounded-lg"
             />
-          </div>
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </label>
-            <input
-              id="email"
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-2">
-              Mobile Number
-            </label>
-            <input
-              id="mobile"
-              type="tel"
-              placeholder="Enter your mobile number"
-              value={mobile}
-              onChange={(e) => setMobile(e.target.value)}
-              required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Create a password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-3 text-gray-400"
+            >
+              {showPassword ? <EyeOff /> : <Eye />}
+            </button>
           </div>
 
           <button
-            type="submit"
             disabled={loading}
-            className={`w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200 transform ${loading ? 'opacity-50 cursor-not-allowed' : 'hover:from-indigo-600 hover:to-purple-700 hover:scale-[1.02] active:scale-[0.98]'}`}
+            className="w-full bg-indigo-600 text-white py-3 rounded-lg"
           >
-            {loading ? 'Creating Account...' : 'Create Account'}
+            {loading ? "Creating account..." : "Create Account"}
           </button>
         </form>
 
-        <div className="mt-8 text-center">
-          <p className="text-gray-600">
-            Already have an account?{" "}
-            <Link
-              to="/login"
-              className="font-semibold text-indigo-600 hover:text-indigo-700 transition-colors duration-200"
-            >
-              Sign in here
-            </Link>
-          </p>
-        </div>
+        <p className="text-center mt-6 text-gray-600">
+          Already have an account?{" "}
+          <Link to="/login" className="text-indigo-600 font-semibold">
+            Sign in
+          </Link>
+        </p>
       </div>
     </div>
   );
