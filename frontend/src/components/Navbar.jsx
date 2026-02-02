@@ -29,7 +29,7 @@ import {
 import { useAppDispatch, useAppSelector } from "@/store/store";
 import { logout } from "@/store/authSlice";
 import { useToast } from "@/context/ToastContext";
-import { getProducts } from "@/api";
+import { getProducts, getCategories } from "@/api";
 
 const Navbar = () => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { Eye, EyeOff } from "lucide-react";
-import axiosInstance from "@/api/axiosInstance.js";
+import axiosInstance from "@/api/axiosInstance";
 import { login } from "@/store/authSlice";
 import { useToast } from "@/context/ToastContext";
 
@@ -31,7 +31,7 @@ const Signup = () => {
         password,
       });
 
-      /* ================= AUTO LOGIN ================= */
+      /* ================= LOGIN ================= */
       const loginRes = await axiosInstance.post("/auth/login", {
         email,
         password,
@@ -39,8 +39,17 @@ const Signup = () => {
 
       const token = loginRes.token;
 
+      // ✅ SAVE TOKEN (CRITICAL)
+      localStorage.setItem("token", token);
+
       /* ================= FETCH PROFILE ================= */
-      const profile = await axiosInstance.get("/auth/profile");
+      const profileRes = await axiosInstance.get("/auth/profile", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const profile = profileRes.data;
 
       /* ================= REDUX LOGIN ================= */
       dispatch(
@@ -71,7 +80,9 @@ const Signup = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white shadow-xl rounded-2xl p-8 border">
-        <h2 className="text-3xl font-bold text-center mb-2">Create Account</h2>
+        <h2 className="text-3xl font-bold text-center mb-2">
+          Create Account
+        </h2>
         <p className="text-gray-600 text-center mb-6">
           Join us today and start shopping
         </p>
