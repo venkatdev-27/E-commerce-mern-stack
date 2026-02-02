@@ -60,6 +60,7 @@ const ProductCard = memo(({ product }) => {
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             loading="lazy"
+            decoding="async"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-200">
@@ -84,11 +85,10 @@ const ProductCard = memo(({ product }) => {
         {/* WISHLIST */}
         <button
           onClick={handleToggleWishlist}
-          className={`absolute top-2 right-2 p-1.5 rounded-full shadow-lg transition ${
-            isWishlisted
+          className={`absolute top-2 right-2 p-1.5 rounded-full shadow-lg transition ${isWishlisted
               ? "bg-white text-red-500"
               : "bg-white text-gray-400 hover:text-red-500"
-          }`}
+            }`}
         >
           <Heart size={16} className={isWishlisted ? "fill-current" : ""} />
         </button>

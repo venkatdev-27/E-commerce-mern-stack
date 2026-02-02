@@ -5,14 +5,18 @@ import axiosInstance from "./axiosInstance";
 ========================= */
 
 // Get products with filters, sort, pagination
-export const getProducts = async (params = {}) => {
+export const getProducts = (params = {}) => {
   return axiosInstance.get("/products", { params });
 };
 
 /* =========================
    🔍 REAL SEARCH (TEXT SEARCH)
 ========================= */
-export const searchProducts = async (query) => {
+export const searchProducts = (query) => {
+  if (!query) {
+    return Promise.resolve({ success: true, data: [] });
+  }
+
   return axiosInstance.get("/products/search", {
     params: { q: query },
   });
@@ -21,13 +25,24 @@ export const searchProducts = async (query) => {
 /* =========================
    SINGLE PRODUCT
 ========================= */
-export const getProductById = async (id) => {
+export const getProductById = (id) => {
+  if (!id) {
+    return Promise.reject(new Error("Product ID is required"));
+  }
+
   return axiosInstance.get(`/products/${id}`);
 };
 
 /* =========================
    META FILTERS
 ========================= */
-export const getBrands = async () => {
+export const getBrands = () => {
   return axiosInstance.get("/products/meta/brands");
+};
+
+/* =========================
+   🏠 HOME PAGE (OPTIMIZED)
+========================= */
+export const getHomePageData = () => {
+  return axiosInstance.get("/home");
 };

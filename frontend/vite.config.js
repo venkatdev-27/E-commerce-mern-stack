@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
     server: {
       host: "0.0.0.0",
       port: 4173,
-      hmr: false,
+      hmr: false,  
     },
 
     // 🔥 THIS IS THE IMPORTANT PART

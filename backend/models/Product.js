@@ -16,13 +16,12 @@ const productSchema = new mongoose.Schema(
     price: {
       type: Number,
       required: true,
-      index: true, // ✅ sorting & filtering
+      min: 0,
     },
 
     category: {
       type: String,
       required: true,
-      index: true, // ✅ filtering
     },
 
     subCategory: {
@@ -33,7 +32,6 @@ const productSchema = new mongoose.Schema(
     brand: {
       type: String,
       trim: true,
-      index: true, // ✅ filtering
     },
 
     color: {
@@ -41,9 +39,7 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
 
-    sizes: {
-      type: [String],
-    },
+    sizes: [String],
 
     image: {
       type: String,
@@ -70,10 +66,14 @@ const productSchema = new mongoose.Schema(
       max: 90,
     },
 
-    isNewArrival: {
+    isFlashSale: {
       type: Boolean,
       default: false,
-      index: true, // ✅ homepage filters
+    },
+
+    isBestSeller: {
+      type: Boolean,
+      default: false,
     },
 
     stock: {
@@ -83,7 +83,7 @@ const productSchema = new mongoose.Schema(
     },
 
     specifications: {
-      type: Object,
+      type: mongoose.Schema.Types.Mixed,
       default: {},
     },
   },
@@ -92,9 +92,23 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-/* =====================================================
-   🔥 TEXT INDEX FOR REAL SEARCH (ONLY ONE)
-===================================================== */
+/* =========================
+   INDEXES (OPTIMIZED)
+========================= */
+
+// Home page & listing performance
+productSchema.index({ isFlashSale: 1 });
+productSchema.index({ isBestSeller: 1 });
+
+// Category browsing + sorting
+productSchema.index({ category: 1, price: -1 });
+
+// Brand filtering
+productSchema.index({ brand: 1 });
+
+/* =========================
+   TEXT SEARCH (ONLY ONE)
+========================= */
 productSchema.index({
   name: "text",
   description: "text",

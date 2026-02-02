@@ -4,9 +4,6 @@ const BASE_URL =  import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 
 
-if (!BASE_URL) {
-  console.error("❌ VITE_API_URL is not defined. Check Render env variables.");
-}
 
 const axiosInstance = axios.create({
   baseURL: `${BASE_URL}/api`,
@@ -15,20 +12,7 @@ const axiosInstance = axios.create({
   },
 });
 
-// Function to show toast - we'll import this dynamically to avoid circular imports
-let addToast = null;
-const loadToast = async () => {
-  if (!addToast) {
-    try {
-      const { useToast } = await import("../../context/ToastContext");
-      // Since we can't use hooks here, we'll need to get the toast function from a global reference
-      // For now, we'll console.log and later we can improve this
-    } catch (e) {
-      console.warn("Toast context not available");
-    }
-  }
-};
-loadToast();
+// Function to show toast - we'll import this dynamically to avoid circular 
 
 /* =========================
    REQUEST INTERCEPTOR
