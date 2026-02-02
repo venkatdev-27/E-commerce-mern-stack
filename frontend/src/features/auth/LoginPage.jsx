@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { Eye, EyeOff } from "lucide-react";
-import axiosInstance from "@/api/axiosInstance";
+import axiosInstance from "@/api/axiosInstance.js";
 import { login as loginAction } from "@/store/authSlice";
 
 function Login() {
@@ -11,7 +11,6 @@ function Login() {
 
   const [loginMethod, setLoginMethod] = useState("email");
   const [step, setStep] = useState(1);
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -43,17 +42,24 @@ function Login() {
         password,
       });
 
-      // ✅ CORRECT REDUX LOGIN
+      localStorage.setItem("token", res.token);
+
+      const profile = await axiosInstance.get("/auth/profile");
+
       dispatch(
         loginAction({
-          user: res.data.user,
-          token: res.data.token,
+          id: profile._id,
+          name: profile.name,
+          email: profile.email,
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            profile.name
+          )}&background=random`,
         })
       );
 
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      setError(err.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -69,11 +75,11 @@ function Login() {
         email: otpEmail,
       });
 
-      setOtpToken(res.data.otpToken);
+      setOtpToken(res.otpToken);
       setStep(2);
       setTimer(60);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to send OTP");
+      setError(err.message || "Failed to send OTP");
     } finally {
       setLoading(false);
     }
@@ -91,17 +97,24 @@ function Login() {
         otp,
       });
 
-      // ✅ CORRECT REDUX LOGIN
+      localStorage.setItem("token", res.token);
+
+      const profile = await axiosInstance.get("/auth/profile");
+
       dispatch(
         loginAction({
-          user: res.data.user,
-          token: res.data.token,
+          id: profile._id,
+          name: profile.name,
+          email: profile.email,
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            profile.name
+          )}&background=random`,
         })
       );
 
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid OTP");
+      setError(err.message || "Invalid OTP");
     } finally {
       setLoading(false);
     }
@@ -119,9 +132,9 @@ function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
-        <h2 className="text-3xl font-bold text-center mb-6">Welcome Back</h2>
-
-        {/* ================= EMAIL LOGIN ================= */}
+        <h2 className="text-3xl font-bold text-center mb-2">Welcome Back</h2>
+<br></br>
+<br></br>
         {loginMethod === "email" && (
           <form onSubmit={handleEmailLogin} className="space-y-4">
             <input
@@ -176,7 +189,6 @@ function Login() {
           </form>
         )}
 
-        {/* ================= OTP STEP 1 ================= */}
         {loginMethod === "otp" && step === 1 && (
           <div className="space-y-4">
             <input
@@ -206,7 +218,6 @@ function Login() {
           </div>
         )}
 
-        {/* ================= OTP STEP 2 ================= */}
         {loginMethod === "otp" && step === 2 && (
           <form onSubmit={handleOtpSubmit} className="space-y-4">
             <input
@@ -235,11 +246,7 @@ function Login() {
               {timer > 0 ? `Resend in ${timer}s` : "Resend OTP"}
             </button>
 
-            <button
-              type="button"
-              onClick={resetOtpFlow}
-              className="w-full text-blue-600"
-            >
+            <button onClick={resetOtpFlow} className="w-full text-blue-600">
               Change Email
             </button>
           </form>
