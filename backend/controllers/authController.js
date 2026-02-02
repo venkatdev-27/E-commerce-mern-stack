@@ -155,15 +155,138 @@ exports.login = async (req, res) => {
   }
 };
 
+
+/* ================= FORGOT PASSWORD ================= */
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ success: false, message: "Email not registered" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const otpToken = jwt.sign(
+      { email, otp, type: "reset" },
+      process.env.JWT_SECRET,
+      { expiresIn: "5m" }
+    );
+
+    const result = await sendOtpEmail(email, otp);
+    if (!result.success) {
+      return res.status(500).json({ success: false, message: "Failed to send OTP" });
+    }
+
+    res.json({
+      success: true,
+      message: "Password reset OTP sent",
+      otpToken,
+    });
+  } catch (error) {
+    console.error("FORGOT PASSWORD ERROR 👉", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+/* ================= VERIFY RESET OTP ================= */
+exports.verifyResetOTP = async (req, res) => {
+  try {
+    const { otpToken, otp } = req.body;
+    if (!otpToken || !otp) {
+      return res.status(400).json({ success: false, message: "OTP required" });
+    }
+
+    const decoded = jwt.verify(otpToken, process.env.JWT_SECRET);
+
+    if (decoded.type !== "reset" || decoded.otp !== otp) {
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
+    }
+
+    res.json({
+      success: true,
+      message: "OTP verified successfully",
+    });
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(400).json({ success: false, message: "OTP expired" });
+    }
+    console.error("VERIFY RESET OTP ERROR 👉", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+/* ================= RESET PASSWORD ================= */
+exports.resetPassword = async (req, res) => {
+  try {
+    const { otpToken, otp, newPassword, confirmPassword } = req.body;
+
+    if (!otpToken || !otp || !newPassword || !confirmPassword) {
+      return res.status(400).json({ success: false, message: "All fields required" });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ success: false, message: "Passwords do not match" });
+    }
+
+    const decoded = jwt.verify(otpToken, process.env.JWT_SECRET);
+
+    if (decoded.type !== "reset" || decoded.otp !== otp) {
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
+    }
+
+    const user = await User.findOne({ email: decoded.email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password reset successful",
+    });
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(400).json({ success: false, message: "OTP expired" });
+    }
+    console.error("RESET PASSWORD ERROR 👉", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+
 /* ================= PROFILE ================= */
 exports.getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
+
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
-    res.json({ success: true, user });
+
+    res.json({
+      success: true,
+      user: {
+        id: user._id,   // ✅ normalize here
+        name: user.name,
+        email: user.email,
+        mobile: user.mobile,
+      },
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+

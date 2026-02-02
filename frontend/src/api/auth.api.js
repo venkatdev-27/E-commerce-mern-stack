@@ -1,55 +1,51 @@
-import axiosInstance from "@/api/axiosInstance";
-
-/* =========================
-   AUTH API
-========================= */
-
 // PASSWORD LOGIN
-export const login = (credentials) => {
-  return axiosInstance.post("/auth/login", credentials);
+export const login = async (credentials) => {
+  return await axiosInstance.post("/auth/login", credentials);
 };
 
 // SIGNUP
-export const signup = (userData) => {
-  return axiosInstance.post("/auth/signup", userData);
+export const signup = async (userData) => {
+  return await axiosInstance.post("/auth/signup", userData);
 };
 
-// SEND OTP (LOGIN)
-export const sendOTP = (email) => {
-  return axiosInstance.post("/auth/send-otp", { email });
+// SEND OTP
+export const sendOTP = async (email) => {
+  return await axiosInstance.post("/auth/send-otp", { email });
 };
 
-// VERIFY OTP (LOGIN)
-export const verifyOTP = (otpToken, otp) => {
-  return axiosInstance.post("/auth/verify-otp", {
+// VERIFY OTP
+export const verifyOTP = async (otpToken, otp) => {
+  return await axiosInstance.post("/auth/verify-otp", {
     otpToken,
-    otp,
+    otp: String(otp),
   });
 };
 
 // FORGOT PASSWORD
-export const forgotPassword = (email) => {
-  return axiosInstance.post("/auth/forgot-password", { email });
+export const forgotPassword = async (email) => {
+  return await axiosInstance.post("/auth/forgot-password", { email });
 };
 
 // VERIFY RESET OTP
-export const verifyResetOTP = (otpToken, otp) => {
-  return axiosInstance.post("/auth/verify-reset-otp", {
+export const verifyResetOTP = async (otpToken, otp) => {
+  return await axiosInstance.post("/auth/verify-reset-otp", {
     otpToken,
-    otp,
+    otp: String(otp),
   });
 };
 
+
+
 // RESET PASSWORD
-export const resetPassword = (
+export const resetPassword = async (
   otpToken,
   otp,
   newPassword,
   confirmPassword
 ) => {
-  return axiosInstance.post("/auth/reset-password", {
+  return await axiosInstance.post("/auth/reset-password", {
     otpToken,
-    otp,
+    otp: String(otp),
     newPassword,
     confirmPassword,
   });

@@ -34,82 +34,92 @@ const ForgotPasswordPage = () => {
   }, [timer]);
 
   const handleSendOTP = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
+  e.preventDefault();
+  setIsLoading(true);
+  setError("");
 
-    try {
-      const response = await forgotPassword(email);
-      setOtpToken(response.otpToken);
-      setStep(2);
-      setTimer(60); // 1 minute
-      addToast("OTP sent to your email successfully", "success");
-    } catch (error) {
-      setError(error.message || "Failed to send OTP");
-      addToast("Failed to send OTP", "error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  try {
+    const data = await forgotPassword(email);
+    setOtpToken(data.otpToken);
+    setStep(2);
+    setTimer(60);
+    addToast("OTP sent to your email successfully", "success");
+  } catch (err) {
+    const msg =
+      err.response?.data?.message || "Failed to send OTP";
+    setError(msg);
+    addToast(msg, "error");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const handleVerifyOTP = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
+  e.preventDefault();
+  setIsLoading(true);
+  setError("");
 
-    try {
-      await verifyResetOTP(otpToken, otp);
-      setStep(3);
-      addToast("OTP verified successfully", "success");
-    } catch (error) {
-      setError(error.message || "Invalid OTP");
-      addToast("Invalid OTP", "error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  try {
+    await verifyResetOTP(otpToken, otp);
+    setStep(3);
+    addToast("OTP verified successfully", "success");
+  } catch (err) {
+    const msg =
+      err.response?.data?.message || "Invalid OTP";
+    setError(msg);
+    addToast(msg, "error");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
-  const handleResetPassword = async (e) => {
-    e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-    if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
-    }
+ const handleResetPassword = async (e) => {
+  e.preventDefault();
 
-    setIsLoading(true);
-    setError("");
+  if (newPassword !== confirmPassword) {
+    setError("Passwords do not match");
+    return;
+  }
+  if (newPassword.length < 6) {
+    setError("Password must be at least 6 characters");
+    return;
+  }
 
-    try {
-      await resetPassword(otpToken, otp, newPassword, confirmPassword);
-      addToast("Password reset successfully!", "success");
-      navigate("/login");
-    } catch (error) {
-      setError(error.message || "Failed to reset password");
-      addToast("Failed to reset password", "error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  setIsLoading(true);
+  setError("");
 
-  const handleResendOTP = async () => {
-    setIsLoading(true);
-    setError("");
-    try {
-      const response = await forgotPassword(email);
-      setOtpToken(response.otpToken);
-      setTimer(60);
-      addToast("OTP sent again to your email", "success");
-    } catch (error) {
-      setError(error.message || "Failed to resend OTP");
-      addToast("Failed to resend OTP", "error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  try {
+    await resetPassword(otpToken, otp, newPassword, confirmPassword);
+    addToast("Password reset successfully!", "success");
+    navigate("/login");
+  } catch (err) {
+    const msg =
+      err.response?.data?.message || "Failed to reset password";
+    setError(msg);
+    addToast(msg, "error");
+  } finally {
+    setIsLoading(false);
+  }
+};
+const handleResendOTP = async () => {
+  setIsLoading(true);
+  setError("");
+
+  try {
+    const data = await forgotPassword(email);
+    setOtpToken(data.otpToken);
+    setTimer(60);
+    addToast("OTP sent again to your email", "success");
+  } catch (err) {
+    const msg =
+      err.response?.data?.message || "Failed to resend OTP";
+    setError(msg);
+    addToast(msg, "error");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleChangeEmail = () => {
     setStep(1);

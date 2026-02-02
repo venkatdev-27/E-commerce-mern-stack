@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { Eye, EyeOff } from "lucide-react";
-import axiosInstance from "@/api/axiosInstance.js";
+import axiosInstance from "@/api/axiosInstance";
 import { login } from "@/store/authSlice";
 import { useToast } from "@/context/ToastContext";
 
@@ -18,55 +18,64 @@ const Signup = () => {
   const navigate = useNavigate();
   const { addToast } = useToast();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      /* ================= SIGNUP ================= */
-      await axiosInstance.post("/auth/signup", {
-        name,
-        email,
-        mobile,
-        password,
-      });
+  try {
+    /* ================= SIGNUP ================= */
+    await axiosInstance.post("/auth/signup", {
+      name,
+      email,
+      mobile,
+      password,
+    });
 
-      /* ================= AUTO LOGIN ================= */
-      const loginRes = await axiosInstance.post("/auth/login", {
-        email,
-        password,
-      });
+    /* ================= AUTO LOGIN ================= */
+    const loginRes = await axiosInstance.post("/auth/login", {
+      email,
+      password,
+    });
 
-      const token = loginRes.token;
+    const token = loginRes.token;
+    const rawUser = loginRes.user;
 
-      /* ================= FETCH PROFILE ================= */
-      const profile = await axiosInstance.get("/auth/profile");
-
-      /* ================= REDUX LOGIN ================= */
-      dispatch(
-        login({
-          user: {
-            id: profile._id,
-            name: profile.name,
-            email: profile.email,
-            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-              profile.name
-            )}&background=random`,
-          },
-          token,
-        })
-      );
-
-      addToast("Account created successfully 🎉", "success");
-      navigate("/");
-    } catch (error) {
-      const message =
-        error.response?.data?.message || "Signup failed. Try again.";
-      addToast(message, "error");
-    } finally {
-      setLoading(false);
+    if (!token || !rawUser) {
+      throw new Error("Invalid login response");
     }
-  };
+
+    /* ================= NORMALIZE USER ================= */
+    const user = {
+      id: rawUser.id || rawUser._id,
+      name: rawUser.name,
+      email: rawUser.email,
+      mobile: rawUser.mobile,
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        rawUser.name
+      )}&background=random`,
+    };
+
+    /* ================= SAVE TOKEN ================= */
+    localStorage.setItem("token", token);
+
+    /* ================= REDUX LOGIN ================= */
+    dispatch(
+      login({
+        user,
+        token,
+      })
+    );
+
+    /* ================= SUCCESS ================= */
+    addToast("Account created successfully 🎉", "success");
+    navigate("/");
+  } catch (error) {
+    console.error(error);
+    addToast(error.message || "Signup failed. Try again.", "error");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex items-center justify-center p-4">
@@ -83,6 +92,7 @@ const Signup = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
+            disabled={loading}
             className="w-full p-3 border rounded-lg"
           />
 
@@ -92,6 +102,7 @@ const Signup = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loading}
             className="w-full p-3 border rounded-lg"
           />
 
@@ -101,6 +112,7 @@ const Signup = () => {
             value={mobile}
             onChange={(e) => setMobile(e.target.value)}
             required
+            disabled={loading}
             className="w-full p-3 border rounded-lg"
           />
 
@@ -111,20 +123,23 @@ const Signup = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={loading}
               className="w-full p-3 pr-10 border rounded-lg"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-3 text-gray-400"
+              tabIndex={-1}
             >
-              {showPassword ? <EyeOff /> : <Eye />}
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
 
           <button
+            type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white py-3 rounded-lg"
+            className="w-full bg-indigo-600 text-white py-3 rounded-lg disabled:opacity-50"
           >
             {loading ? "Creating account..." : "Create Account"}
           </button>

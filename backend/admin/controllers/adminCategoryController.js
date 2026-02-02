@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Category = require("../../models/Category");
 const {
   convertArrayTimestampsToIST,
-  convertTimestampsToIST
+  convertTimestampsToIST,
 } = require("../../utils/dateUtils");
 
 /* ================================
@@ -10,11 +10,16 @@ const {
 ================================ */
 const getAllCategories = async (req, res) => {
   try {
-    const categories = await Category.find({}, '_id name slug icon isActive description image createdAt')
+    const categories = await Category.find(
+      {},
+      "_id name slug isActive description image createdAt updatedAt"
+    )
       .sort({ createdAt: -1 })
       .lean();
 
-    const categoriesWithIST = convertArrayTimestampsToIST(categories);
+    const categoriesWithIST =
+      convertArrayTimestampsToIST(categories);
+
     res.json(categoriesWithIST);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -26,7 +31,10 @@ const getAllCategories = async (req, res) => {
 ================================ */
 const getActiveCategories = async (req, res) => {
   try {
-    const categories = await Category.find({ isActive: true }, '_id name slug icon image')
+    const categories = await Category.find(
+      { isActive: true },
+      "_id name slug image"
+    )
       .sort({ createdAt: -1 })
       .lean();
 
@@ -42,15 +50,24 @@ const getActiveCategories = async (req, res) => {
 const getCategory = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: "Invalid category ID" });
+      return res
+        .status(400)
+        .json({ message: "Invalid category ID" });
     }
 
-    const category = await Category.findById(req.params.id).lean();
+    const category = await Category.findById(
+      req.params.id
+    ).lean();
+
     if (!category) {
-      return res.status(404).json({ message: "Category not found" });
+      return res
+        .status(404)
+        .json({ message: "Category not found" });
     }
 
-    const categoryWithIST = convertTimestampsToIST(category);
+    const categoryWithIST =
+      convertTimestampsToIST(category);
+
     res.json(categoryWithIST);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -58,53 +75,47 @@ const getCategory = async (req, res) => {
 };
 
 /* ================================
-   CREATE CATEGORY
+   CREATE CATEGORY (IMAGE BASED)
 ================================ */
 const createCategory = async (req, res) => {
   try {
-    const { name, slug, icon, isActive, description, image } = req.body;
+    console.log("REQ BODY 👉", req.body);
+    console.log("REQ FILE 👉", req.file);
 
+    const { name, slug, isActive, description, image } = req.body;
+
+    // ✅ ONLY validation left
     if (!name || name.trim() === "") {
       return res.status(400).json({ message: "Category name is required" });
     }
 
-    if (!icon || icon.trim() === "") {
-      return res.status(400).json({ message: "Category icon is required" });
-    }
-
-    // Auto-generate slug if not provided
-    let categorySlug = slug?.trim();
+    // ✅ slug auto-generate
+    let categorySlug = slug;
     if (!categorySlug) {
-      categorySlug = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      categorySlug = name
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
     }
 
-    // Handle image - prefer uploaded file over URL
-    let imagePath = image?.trim() || "";
+    // ✅ image optional
+    let imagePath = image || "";
     if (req.file) {
       imagePath = `/uploads/categories/${req.file.filename}`;
     }
 
-    // Create category
-    const categoryData = {
+    const category = await Category.create({
       name: name.trim(),
       slug: categorySlug,
-      icon: icon.trim(),
+      image: imagePath,
+      description: description || "",
       isActive: isActive !== undefined ? isActive : true,
-      description: description?.trim() || "",
-      image: imagePath
-    };
+    });
 
-    const category = await Category.create(categoryData);
-    const categoryWithIST = convertTimestampsToIST(category.toObject());
-
-    res.status(201).json(categoryWithIST);
+    res.status(201).json(category);
   } catch (error) {
-    if (error.code === 11000) {
-      const field = Object.keys(error.keyPattern)[0];
-      return res.status(400).json({
-        message: `Category ${field} already exists`
-      });
-    }
+    console.error("CREATE CATEGORY ERROR 👉", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -115,24 +126,31 @@ const createCategory = async (req, res) => {
 const updateCategory = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: "Invalid category ID" });
+      return res
+        .status(400)
+        .json({ message: "Invalid category ID" });
     }
 
-    const { name, slug, icon, isActive, description, image } = req.body;
+    const { name, slug, isActive, description } =
+      req.body;
+
     const updateData = {};
 
-    // Handle optional fields
-    if (name !== undefined) updateData.name = name.trim();
-    if (slug !== undefined) updateData.slug = slug.trim();
-    if (icon !== undefined) updateData.icon = icon.trim();
-    if (isActive !== undefined) updateData.isActive = isActive;
-    if (description !== undefined) updateData.description = description.trim();
+    if (name !== undefined)
+      updateData.name = name.trim();
 
-    // Handle image - prefer uploaded file over URL
+    if (slug !== undefined)
+      updateData.slug = slug.trim();
+
+    if (isActive !== undefined)
+      updateData.isActive = isActive;
+
+    if (description !== undefined)
+      updateData.description = description.trim();
+
+    // Image update
     if (req.file) {
       updateData.image = `/uploads/categories/${req.file.filename}`;
-    } else if (image !== undefined) {
-      updateData.image = image?.trim() || "";
     }
 
     const category = await Category.findByIdAndUpdate(
@@ -142,17 +160,20 @@ const updateCategory = async (req, res) => {
     );
 
     if (!category) {
-      return res.status(404).json({ message: "Category not found" });
+      return res
+        .status(404)
+        .json({ message: "Category not found" });
     }
 
-    const categoryWithIST = convertTimestampsToIST(category.toObject());
+    const categoryWithIST =
+      convertTimestampsToIST(category.toObject());
+
     res.json(categoryWithIST);
   } catch (error) {
     if (error.code === 11000) {
-      const field = Object.keys(error.keyPattern)[0];
-      return res.status(400).json({
-        message: `Category ${field} already exists`
-      });
+      return res
+        .status(400)
+        .json({ message: "Category already exists" });
     }
     res.status(500).json({ message: error.message });
   }
@@ -164,15 +185,23 @@ const updateCategory = async (req, res) => {
 const deleteCategory = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: "Invalid category ID" });
+      return res
+        .status(400)
+        .json({ message: "Invalid category ID" });
     }
 
-    const category = await Category.findByIdAndDelete(req.params.id);
+    const category =
+      await Category.findByIdAndDelete(req.params.id);
+
     if (!category) {
-      return res.status(404).json({ message: "Category not found" });
+      return res
+        .status(404)
+        .json({ message: "Category not found" });
     }
 
-    res.json({ message: "Category deleted successfully" });
+    res.json({
+      message: "Category deleted successfully",
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -184,5 +213,5 @@ module.exports = {
   getCategory,
   createCategory,
   updateCategory,
-  deleteCategory
+  deleteCategory,
 };

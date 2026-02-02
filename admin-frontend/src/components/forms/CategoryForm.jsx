@@ -23,20 +23,27 @@ export default function CategoryForm({
   }, [initialData, reset]);
 
   const handleFormSubmit = (data) => {
-    const submitData = new FormData();
+  const submitData = new FormData();
 
-    // Add basic fields
-    submitData.append('name', data.name.trim());
-    if (data.description) submitData.append('description', data.description.trim());
-    if (data.image) submitData.append('image', data.image.trim());
+  // REQUIRED
+  submitData.append("name", data.name.trim());
 
-    // Handle file upload
-    if (data.imageFile && data.imageFile[0]) {
-      submitData.append('imageFile', data.imageFile[0]);
-    }
+  // OPTIONAL
+  if (data.description?.trim()) {
+    submitData.append("description", data.description.trim());
+  }
 
-    onSubmit(submitData);
-  };
+  // ✅ FILE HAS PRIORITY
+  if (data.imageFile && data.imageFile[0]) {
+    submitData.append("imageFile", data.imageFile[0]);
+  }
+  // ✅ ELSE URL
+  else if (data.image?.trim()) {
+    submitData.append("image", data.image.trim());
+  }
+
+  onSubmit(submitData);
+};
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '600px' }}>

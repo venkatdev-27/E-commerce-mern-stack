@@ -62,36 +62,31 @@ const Navbar = () => {
 useEffect(() => {
   const loadCategories = async () => {
     try {
-      const response = await getCategories();
+      const res = await getCategories();
+      const categoriesFromDB = res.categories || res || [];
 
-      const defaultCategories = [
-        { id: "men-clothes", name: "Men's Fashion" },
-        { id: "women-clothes", name: "Women's Fashion" },
-        { id: "electronics", name: "Electronics" },
-        { id: "footwear", name: "Footwear" },
-        { id: "home", name: "Home & Living" },
-        { id: "beauty", name: "Beauty & Care" },
-        { id: "sports", name: "Sports & Fitness" },
-        { id: "accessories", name: "Accessories" },
-      ];
-
-      const dbCategories = (response || []).map((cat) => ({
-        id: cat.name.toLowerCase().replace(/\s+/g, "-"),
+      const dbCategories = categoriesFromDB.map((cat) => ({
+        id: cat._id, // real DB id
         name: cat.name,
-        image: cat.image,
+        slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, "-"),
+        image: cat.image || null,
       }));
 
-      // ✅ DEFINE BEFORE USE
-      const categoryMap = new Map();
-
-      [...defaultCategories, ...dbCategories].forEach((cat) => {
-        categoryMap.set(cat.id, cat);
-      });
-
+      // ✅ ADD STATIC FIRST
       setCategories([
-        { id: "all", name: "All Products" },
-        { id: "recommended", name: "Recommended" },
-        ...Array.from(categoryMap.values()),
+        {
+          id: "all",
+          name: "All Products",
+          slug: "all",
+          image: null,
+        },
+        {
+          id: "recommended",
+          name: "Recommended",
+          slug: "recommended",
+          image: null,
+        },
+        ...dbCategories,
       ]);
     } catch (error) {
       console.error("Error loading categories:", error);
@@ -185,41 +180,35 @@ const handleGoBack = () => {
    CATEGORY ICON HELPER
 ===================================================== */
 const getCategoryIcon = (category) => {
+  // 1️⃣ DB image (MAIN CASE)
   if (category.image) {
     return (
       <img
         src={category.image}
         alt={category.name}
-        className="w-16 h-6 rounded-md object-cover border border-gray-200"
+        className="w-8 h-8 object-contain"
       />
     );
   }
 
-  // Unique icons for each category
-  switch (category.name) {
-    case "All Products":
-      return <LayoutGrid size={20} className="text-gray-600" />;
-    case "Recommended":
-      return <Star size={20} className="text-gray-600" />;
-    case "Men's Fashion":
-    case "Women's Fashion":
-      return <Shirt size={20} className="text-gray-600" />;
-    case "Electronics":
-      return <Smartphone size={20} className="text-gray-600" />;
-    case "Footwear":
-      return <Shirt size={20} className="text-gray-600" />;
-    case "Home & Living":
-      return <Home size={20} className="text-gray-600" />;
-    case "Beauty & Care":
-      return <Sparkles size={20} className="text-gray-600" />;
-    case "Sports & Fitness":
-      return <Dumbbell size={20} className="text-gray-600" />;
-    case "Accessories":
-      return <Watch size={20} className="text-gray-600" />;
-    default:
-      return <LayoutGrid size={20} className="text-gray-600" />;
+  // 2️⃣ ONLY static icons
+  if (category.id === "all") {
+    return <LayoutGrid size={20} className="text-gray-600" />;
   }
+
+  if (category.id === "recommended") {
+    return <Star size={20} className="text-gray-600" />;
+  }
+
+  // 3️⃣ SAFE PLACEHOLDER (IMPORTANT)
+  return (
+    <div className="w-8 h-8 rounded-md bg-gray-100" />
+  );
 };
+
+
+  // Unique icons for each category
+  
 
     return (
       <nav
@@ -709,6 +698,6 @@ const getCategoryIcon = (category) => {
 
       </nav>
     );
-  };
-  
+
+}
   export default Navbar;

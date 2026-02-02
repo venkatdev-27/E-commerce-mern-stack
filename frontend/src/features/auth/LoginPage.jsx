@@ -31,94 +31,140 @@ function Login() {
   }, [timer]);
 
   /* ================= EMAIL LOGIN ================= */
-  const handleEmailLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+const handleEmailLogin = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
 
-    try {
-      const res = await axiosInstance.post("/auth/login", {
-        email,
-        password,
-      });
+  try {
+    // 1️⃣ LOGIN → TOKEN ONLY
+    const loginRes = await axiosInstance.post("/auth/login", {
+      email,
+      password,
+    });
 
-      localStorage.setItem("token", res.token);
+    const token = loginRes?.token;
+    if (!token) throw new Error("Token not received");
 
-      const profile = await axiosInstance.get("/auth/profile");
+    localStorage.setItem("token", token);
 
-      dispatch(
-        loginAction({
-          id: profile._id,
-          name: profile.name,
-          email: profile.email,
-          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            profile.name
-          )}&background=random`,
-        })
-      );
+    // 2️⃣ PROFILE FETCH
+    const profileRes = await axiosInstance.get("/auth/profile");
 
-      navigate("/");
-    } catch (err) {
-      setError(err.message || "Login failed");
-    } finally {
-      setLoading(false);
+    // ✅ SUPPORT BOTH RESPONSE SHAPES
+    const user = profileRes.user || profileRes;
+
+    if (!user || (!user._id && !user.id)) {
+      throw new Error("Invalid profile response");
     }
-  };
 
+    // 3️⃣ REDUX LOGIN
+    dispatch(
+      loginAction({
+        user: {
+          id: user._id || user.id,
+          name: user.name,
+          email: user.email,
+          mobile: user.mobile,
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            user.name
+          )}&background=random`,
+        },
+        token,
+      })
+    );
+
+    navigate("/");
+  } catch (err) {
+    console.error("LOGIN FAILED 👉", err);
+    setError(err.message || "Login failed");
+  } finally {
+    setLoading(false);
+  }
+};
+
+ /* ================= SEND OTP ================= */
   /* ================= SEND OTP ================= */
-  const sendOtp = async () => {
-    setLoading(true);
-    setError("");
+const sendOtp = async () => {
+  setLoading(true);
+  setError("");
 
-    try {
-      const res = await axiosInstance.post("/auth/send-otp", {
-        email: otpEmail,
-      });
+  try {
+    const res = await axiosInstance.post("/auth/send-otp", {
+      email: otpEmail,
+    });
 
-      setOtpToken(res.otpToken);
-      setStep(2);
-      setTimer(60);
-    } catch (err) {
-      setError(err.message || "Failed to send OTP");
-    } finally {
-      setLoading(false);
+    if (!res?.otpToken) {
+      console.error("Send OTP response:", res);
+      throw new Error("OTP token not received");
     }
-  };
 
-  /* ================= VERIFY OTP ================= */
-  const handleOtpSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+    setOtpToken(res.otpToken);
+    setStep(2);
+    setTimer(60);
+  } catch (err) {
+    console.error("SEND OTP FAILED 👉", err);
+    setError(err.message || "Failed to send OTP");
+  } finally {
+    setLoading(false);
+  }
+};
 
-    try {
-      const res = await axiosInstance.post("/auth/verify-otp", {
-        otpToken,
-        otp,
-      });
+/* ================= VERIFY OTP ================= */
+const handleOtpSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
 
-      localStorage.setItem("token", res.token);
+  try {
+    // 1️⃣ VERIFY OTP → TOKEN
+    const verifyRes = await axiosInstance.post("/auth/verify-otp", {
+      otpToken,
+      otp: String(otp),
+    });
 
-      const profile = await axiosInstance.get("/auth/profile");
+    if (!verifyRes?.token) {
+      console.error("Verify OTP response:", verifyRes);
+      throw new Error("Token not received");
+    }
 
-      dispatch(
-        loginAction({
-          id: profile._id,
-          name: profile.name,
-          email: profile.email,
+    localStorage.setItem("token", verifyRes.token);
+
+    // 2️⃣ PROFILE FETCH
+    const profileRes = await axiosInstance.get("/auth/profile");
+
+    // ✅ SUPPORT BOTH RESPONSE SHAPES
+    const user = profileRes?.user || profileRes;
+
+    if (!user || (!user._id && !user.id)) {
+      console.error("Profile response:", profileRes);
+      throw new Error("Invalid profile response");
+    }
+
+    // 3️⃣ REDUX LOGIN
+    dispatch(
+      loginAction({
+        user: {
+          id: user._id || user.id,
+          name: user.name,
+          email: user.email,
+          mobile: user.mobile,
           avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            profile.name
+            user.name
           )}&background=random`,
-        })
-      );
+        },
+        token: verifyRes.token,
+      })
+    );
 
-      navigate("/");
-    } catch (err) {
-      setError(err.message || "Invalid OTP");
-    } finally {
-      setLoading(false);
-    }
-  };
+    navigate("/");
+  } catch (err) {
+    console.error("OTP LOGIN FAILED 👉", err);
+    setError(err.message || "Invalid OTP");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const resetOtpFlow = () => {
     setStep(1);
@@ -133,8 +179,7 @@ function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
         <h2 className="text-3xl font-bold text-center mb-2">Welcome Back</h2>
-<br></br>
-<br></br>
+
         {loginMethod === "email" && (
           <form onSubmit={handleEmailLogin} className="space-y-4">
             <input
