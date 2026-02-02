@@ -4,6 +4,15 @@ const {
   convertTimestampsToIST,
 } = require("../utils/dateUtils");
 
+
+const normalizeCategory = (slug) =>
+  slug
+    .toLowerCase()
+    .replace(/-/g, " ")
+    .replace(/\band\b/g, "&")
+    .replace(/\bmens\b/, "men's")
+    .replace(/\bwomens\b/, "women's");
+
 /* =====================================================
    GET PRODUCTS (FILTER + SEARCH + SORT + PAGINATION)
 ===================================================== */
@@ -37,17 +46,18 @@ const getProducts = async (req, res) => {
     }
 
     /* ---------- CATEGORY ---------- */
-    if (category !== "all") {
-      if (category === "recommended") {
-        query.$or = [
-          { rating: { $gte: 4 } },
-          { isNewArrival: true },
-          { discount: { $gte: 20 } },
-        ];
-      } else {
-        query.category = new RegExp(`^${category.trim()}$`, "i");
-      }
-    }
+   /* ---------- CATEGORY ---------- */
+if (category !== "all") {
+  if (category === "recommended") {
+    query.$or = [
+      { rating: { $gte: 4 } },
+      { discount: { $gte: 20 } },
+    ];
+  } else {
+    const normalizedCategory = normalizeCategory(category);
+    query.category = new RegExp(`^${normalizedCategory}$`, "i");
+  }
+}
 
     /* ---------- BRAND ---------- */
     if (brands) {

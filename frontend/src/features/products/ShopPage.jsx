@@ -3,7 +3,7 @@ import React, {  useReducer, useEffect, useState } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import ProductCard from "@/components/ProductCard.jsx";
 import { getProducts, getBrands } from "@/api";
-import { getCategoryName } from "@/constants/categories";
+
 import { SearchX, Home,  ChevronDown } from "lucide-react";
 
 const initialState = {
@@ -115,16 +115,16 @@ const ShopPage = () => {
     setError(null);
 
     try {
-      const params = {
-        category: getCategoryName(state.category), // 🔥 Transform slug to full name
-        search: state.searchQuery || "", // 🔥 Always include search parameter
-        brands: state.selectedBrands.join(","),
-        minPrice: state.minPrice,
-        maxPrice: state.maxPrice,
-        sortBy,
-        page,
-        limit: state.category === "all" ? 200 : 50,
-      };
+     const params = {
+  category: state.category === "all" ? undefined : state.category,
+  search: state.searchQuery || undefined,
+  brands: state.selectedBrands.length ? state.selectedBrands.join(",") : undefined,
+  minPrice: state.minPrice,
+  maxPrice: state.maxPrice,
+  sortBy,
+  page,
+  limit: state.category === "all" ? 200 : 50,
+};
 
       // remove empty params
       Object.keys(params).forEach(
@@ -260,8 +260,11 @@ const ShopPage = () => {
                 No products found
               </h3>
               <p className="text-gray-500 max-w-sm mx-auto mb-8 leading-relaxed">
-                We couldn't find any products matching your search "{state.searchQuery}".
-              </p>
+  No products found
+  {state.searchQuery && ` for "${state.searchQuery}"`}
+  {state.category !== "all" && ` in "${state.category.replace("-", " ")}"`}
+</p>
+
               <button
                 onClick={() => window.location.reload()}
                 className="bg-slate-900 text-white px-8 py-3.5 rounded-full font-bold hover:bg-blue-600 transition-all shadow-lg hover:shadow-blue-200"

@@ -23,6 +23,7 @@ import {
   Sparkles,
   Dumbbell,
   Watch,
+  Image as ImageIcon,
 } from "lucide-react";
 
 
@@ -59,6 +60,18 @@ const Navbar = () => {
   /* =====================================================
    LOAD CATEGORIES (HARD CODED)
 ===================================================== */
+
+
+
+// 🔹 Utility: safe category slug generator
+const makeSlug = (name) =>
+  name
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/'/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
 useEffect(() => {
   const loadCategories = async () => {
     try {
@@ -68,7 +81,8 @@ useEffect(() => {
       const dbCategories = categoriesFromDB.map((cat) => ({
         id: cat._id, // real DB id
         name: cat.name,
-        slug: cat.slug || cat.name.toLowerCase().replace(/\s+/g, "-"),
+       slug: cat.slug?.trim() || makeSlug(cat.name),
+
         image: cat.image || null,
       }));
 
@@ -186,25 +200,46 @@ const getCategoryIcon = (category) => {
       <img
         src={category.image}
         alt={category.name}
-        className="w-8 h-8 object-contain"
+        className="
+          w-8 h-8 rounded-full object-cover
+          md:border md:border-gray-300   /* Laptop only */
+        "
       />
     );
   }
 
-  // 2️⃣ ONLY static icons
+  // 2️⃣ Static icons
   if (category.id === "all") {
-    return <LayoutGrid size={20} className="text-gray-600" />;
+    return (
+      <LayoutGrid
+        size={20}
+        className="text-gray-600"
+      />
+    );
   }
 
   if (category.id === "recommended") {
-    return <Star size={20} className="text-gray-600" />;
+    return (
+      <Star
+        size={20}
+        className="text-yellow-500"
+      />
+    );
   }
 
-  // 3️⃣ SAFE PLACEHOLDER (IMPORTANT)
+  // 3️⃣ Improved placeholder (VISIBLE & CLEAN)
   return (
-    <div className="w-8 h-8 rounded-md bg-gray-100" />
+    <div
+      className="
+        w-8 h-8 rounded-full
+        bg-gray-100 flex items-center justify-center
+      "
+    >
+      <ImageIcon size={16} className="text-gray-400" />
+    </div>
   );
 };
+
 
 
   // Unique icons for each category
@@ -483,7 +518,7 @@ const getCategoryIcon = (category) => {
         {categories.map((cat) => (
           <Link
             key={cat.id}
-            to={`/shop?category=${encodeURIComponent(cat.id)}`}
+            to={`/shop?category=${(cat.slug)}`}
             className="flex flex-col items-center justify-center flex-1 px-2 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 transition-all group mx-1"
           >
             <div className="flex items-center justify-center w-full h-8">

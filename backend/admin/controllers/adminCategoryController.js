@@ -84,41 +84,44 @@ const createCategory = async (req, res) => {
 
     const { name, slug, isActive, description, image } = req.body;
 
-    // ✅ ONLY validation left
-    if (!name || name.trim() === "") {
+    if (!name || !name.trim()) {
       return res.status(400).json({ message: "Category name is required" });
     }
 
-    // ✅ slug auto-generate
-    let categorySlug = slug;
-    if (!categorySlug) {
-      categorySlug = name
+    // Auto-generate slug
+    const categorySlug =
+      slug?.trim() ||
+      name
         .trim()
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
-    }
 
-    // ✅ image optional
-    let imagePath = image || "";
+    // Image handling
+    let imagePath = "";
     if (req.file) {
       imagePath = `/uploads/categories/${req.file.filename}`;
+    } else if (image?.trim()) {
+      imagePath = image.trim();
     }
 
     const category = await Category.create({
       name: name.trim(),
       slug: categorySlug,
+      description: description?.trim() || "",
       image: imagePath,
-      description: description || "",
       isActive: isActive !== undefined ? isActive : true,
     });
 
     res.status(201).json(category);
   } catch (error) {
-    console.error("CREATE CATEGORY ERROR 👉", error);
+    if (error.code === 11000) {
+      return res.status(400).json({ message: "Category already exists" });
+    }
     res.status(500).json({ message: error.message });
   }
 };
+
 
 /* ================================
    UPDATE CATEGORY
