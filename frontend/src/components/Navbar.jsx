@@ -26,10 +26,10 @@ import {
 } from "lucide-react";
 
 
-import { useAppDispatch, useAppSelector } from "../store/store";
-import { logout } from "../store/authSlice";
-import { useToast } from "../context/ToastContext";
-import { getProducts, getCategories } from "../src/api";
+import { useAppDispatch, useAppSelector } from "@/store/store";
+import { logout } from "@/store/authSlice";
+import { useToast } from "@/context/ToastContext";
+import { getProducts, getCategories } from "@/api";
 
 const Navbar = () => {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);

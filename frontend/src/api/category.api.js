@@ -1,13 +1,11 @@
-import axiosInstance from '@/api/axiosInstance';
-
+import axiosInstance from "@/api/axiosInstance";
 
 export const getCategories = async () => {
   try {
-    const { data } = await axiosInstance.get('/categories');
-    return data;
+    return await axiosInstance.get("/categories");
   } catch (error) {
     throw new Error(
-      error.response?.data?.message || 'Failed to fetch categories'
+      error?.message || "Failed to fetch categories"
     );
   }
 };
