@@ -10,6 +10,7 @@ const {
 } = require("../controllers/adminProductController");
 
 const requireAdminAuth = require("../middleware/adminAuthMiddleware");
+const upload = require("../../config/multer");
 
 /* =========================
    ADMIN PRODUCT ROUTES
@@ -21,14 +22,14 @@ router.use(requireAdminAuth);
 // 📦 Get all products
 router.get("/", getAllProducts);
 
-// ➕ Create product
-router.post("/", createProduct);
+// ➕ Create product (WITH IMAGE)
+router.post("/", upload.single("image"), createProduct);
 
 // 📄 Get single product
 router.get("/:id", getProduct);
 
-// ✏️ Update product
-router.put("/:id", updateProduct);
+// ✏️ Update product (WITH IMAGE)
+router.put("/:id", upload.single("image"), updateProduct);
 
 // ❌ Delete product
 router.delete("/:id", deleteProduct);

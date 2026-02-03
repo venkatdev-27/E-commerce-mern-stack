@@ -8,6 +8,31 @@ import { getCategories, deleteCategory, createCategory, updateCategory } from '.
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
+
+  // ✅ Helper to fix Image URLs
+  const getImageUrl = (image) => {
+    if (!image) return "";
+
+    // 1. Check for Base64 Data URI (Return as is)
+    if (image.startsWith("data:")) {
+      return image;
+    }
+
+    // 2. Fix Windows Backslashes
+    let finalImage = image.replace(/\\/g, "/");
+
+    if (finalImage.startsWith("http://localhost:5174")) {
+      finalImage = finalImage.replace("5174", "5000"); // Fix bad data
+    }
+    if (finalImage.startsWith("http")) {
+      return finalImage; // Already valid absolute URL
+    }
+    // Ensure leading slash for relative paths
+    if (!finalImage.startsWith("/")) {
+      finalImage = "/" + finalImage;
+    }
+    return `http://localhost:5000${finalImage}`; // Prepend backend URL
+  };
   const [loading, setLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -18,27 +43,36 @@ export default function Categories() {
     setLoading(true);
     try {
       const response = await getCategories();
-      setCategories(response);
+      setCategories(response || []);
     } catch (error) {
       console.error(error);
+      alert("Failed to load categories");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
     fetchCategories();
   }, []);
 
+  /* ================================
+     DELETE CATEGORY
+  ================================ */
   const handleDelete = async (id) => {
     try {
       await deleteCategory(id);
       fetchCategories();
-    } catch (error) {
-      alert('Delete failed');
+    } catch {
+      alert("Delete failed");
+    } finally {
+      setConfirmDelete(null);
     }
-    setConfirmDelete(null);
   };
 
+  /* ================================
+     ADD / EDIT
+  ================================ */
   const handleAddCategory = () => {
     setEditingCategory(null);
     setShowForm(true);
@@ -49,19 +83,22 @@ export default function Categories() {
     setShowForm(true);
   };
 
-  const handleFormSubmit = async (categoryData) => {
+  /* ================================
+     FORM SUBMIT (MULTER)
+  ================================ */
+  const handleFormSubmit = async (formData) => {
     setSaving(true);
     try {
       if (editingCategory) {
-        await updateCategory(editingCategory._id, categoryData);
+        await updateCategory(editingCategory._id, formData);
       } else {
-        await createCategory(categoryData);
+        await createCategory(formData);
       }
       setShowForm(false);
       setEditingCategory(null);
       fetchCategories();
     } catch (err) {
-      alert(err.message || 'Save failed');
+      alert(err.message || "Save failed");
     } finally {
       setSaving(false);
     }
@@ -126,6 +163,7 @@ export default function Categories() {
               <tbody>
                 {categories.map((category, index) => (
                   <tr key={category._id} style={{ borderTop: '1px solid var(--border-color)' }}>
+
                     <td style={{ padding: '15px', color: 'var(--text-primary)', textAlign: 'center', fontWeight: '600' }}>
                       {index + 1}
                     </td>
@@ -134,7 +172,7 @@ export default function Categories() {
                     <td style={{ padding: '15px', color: 'var(--text-primary)' }}>
                       {category.image ? (
                         <img
-                          src={category.image}
+                          src={getImageUrl(category.image)}
                           alt={category.name}
                           style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px' }}
                         />

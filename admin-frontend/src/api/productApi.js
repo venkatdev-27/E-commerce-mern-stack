@@ -15,11 +15,14 @@ export const getProducts = async (params = {}) => {
 };
 
 /* ================================
-   CREATE PRODUCT
+   CREATE PRODUCT (FormData)
 ================================ */
-export const createProduct = async (product) => {
+export const createProduct = async (productFormData) => {
   try {
-    const { data } = await adminAxios.post("/products", product);
+    const { data } = await adminAxios.post(
+      "/products",
+      productFormData
+    );
     return data;
   } catch (error) {
     throw new Error(
@@ -29,11 +32,14 @@ export const createProduct = async (product) => {
 };
 
 /* ================================
-   UPDATE PRODUCT
+   UPDATE PRODUCT (FormData)
 ================================ */
-export const updateProduct = async (id, product) => {
+export const updateProduct = async (id, productFormData) => {
   try {
-    const { data } = await adminAxios.put(`/products/${id}`, product);
+    const { data } = await adminAxios.put(
+      `/products/${id}`,
+      productFormData
+    );
     return data;
   } catch (error) {
     throw new Error(

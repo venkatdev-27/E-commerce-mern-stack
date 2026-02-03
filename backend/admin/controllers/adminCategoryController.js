@@ -17,10 +17,7 @@ const getAllCategories = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    const categoriesWithIST =
-      convertArrayTimestampsToIST(categories);
-
-    res.json(categoriesWithIST);
+    res.json(convertArrayTimestampsToIST(categories));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -50,46 +47,32 @@ const getActiveCategories = async (req, res) => {
 const getCategory = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res
-        .status(400)
-        .json({ message: "Invalid category ID" });
+      return res.status(400).json({ message: "Invalid category ID" });
     }
 
-    const category = await Category.findById(
-      req.params.id
-    ).lean();
-
+    const category = await Category.findById(req.params.id).lean();
     if (!category) {
-      return res
-        .status(404)
-        .json({ message: "Category not found" });
+      return res.status(404).json({ message: "Category not found" });
     }
 
-    const categoryWithIST =
-      convertTimestampsToIST(category);
-
-    res.json(categoryWithIST);
+    res.json(convertTimestampsToIST(category));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
 /* ================================
-   CREATE CATEGORY (IMAGE BASED)
+   CREATE CATEGORY (MULTER)
 ================================ */
 const createCategory = async (req, res) => {
   try {
-    console.log("REQ BODY 👉", req.body);
-    console.log("REQ FILE 👉", req.file);
-
     const { name, slug, isActive, description, image } = req.body;
 
     if (!name || !name.trim()) {
       return res.status(400).json({ message: "Category name is required" });
     }
 
-    // Auto-generate slug
-    const categorySlug =
+    const finalSlug =
       slug?.trim() ||
       name
         .trim()
@@ -97,7 +80,6 @@ const createCategory = async (req, res) => {
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
 
-    // Image handling
     let imagePath = "";
     if (req.file) {
       imagePath = `/uploads/categories/${req.file.filename}`;
@@ -107,13 +89,13 @@ const createCategory = async (req, res) => {
 
     const category = await Category.create({
       name: name.trim(),
-      slug: categorySlug,
+      slug: finalSlug,
       description: description?.trim() || "",
       image: imagePath,
-      isActive: isActive !== undefined ? isActive : true,
+      isActive: isActive !== undefined ? isActive === "true" : true,
     });
 
-    res.status(201).json(category);
+    res.status(201).json(convertTimestampsToIST(category.toObject()));
   } catch (error) {
     if (error.code === 11000) {
       return res.status(400).json({ message: "Category already exists" });
@@ -122,36 +104,33 @@ const createCategory = async (req, res) => {
   }
 };
 
-
 /* ================================
-   UPDATE CATEGORY
+   UPDATE CATEGORY (MULTER)
 ================================ */
 const updateCategory = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res
-        .status(400)
-        .json({ message: "Invalid category ID" });
+      return res.status(400).json({ message: "Invalid category ID" });
     }
 
-    const { name, slug, isActive, description } =
-      req.body;
-
+    const { name, slug, isActive, description } = req.body;
     const updateData = {};
 
-    if (name !== undefined)
+    if (name !== undefined) {
       updateData.name = name.trim();
+      updateData.slug =
+        slug?.trim() ||
+        name
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "");
+    }
 
-    if (slug !== undefined)
-      updateData.slug = slug.trim();
+    if (slug !== undefined) updateData.slug = slug.trim();
+    if (description !== undefined) updateData.description = description.trim();
+    if (isActive !== undefined) updateData.isActive = isActive === "true";
 
-    if (isActive !== undefined)
-      updateData.isActive = isActive;
-
-    if (description !== undefined)
-      updateData.description = description.trim();
-
-    // Image update
     if (req.file) {
       updateData.image = `/uploads/categories/${req.file.filename}`;
     }
@@ -163,20 +142,13 @@ const updateCategory = async (req, res) => {
     );
 
     if (!category) {
-      return res
-        .status(404)
-        .json({ message: "Category not found" });
+      return res.status(404).json({ message: "Category not found" });
     }
 
-    const categoryWithIST =
-      convertTimestampsToIST(category.toObject());
-
-    res.json(categoryWithIST);
+    res.json(convertTimestampsToIST(category.toObject()));
   } catch (error) {
     if (error.code === 11000) {
-      return res
-        .status(400)
-        .json({ message: "Category already exists" });
+      return res.status(400).json({ message: "Category already exists" });
     }
     res.status(500).json({ message: error.message });
   }
@@ -188,23 +160,15 @@ const updateCategory = async (req, res) => {
 const deleteCategory = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res
-        .status(400)
-        .json({ message: "Invalid category ID" });
+      return res.status(400).json({ message: "Invalid category ID" });
     }
 
-    const category =
-      await Category.findByIdAndDelete(req.params.id);
-
+    const category = await Category.findByIdAndDelete(req.params.id);
     if (!category) {
-      return res
-        .status(404)
-        .json({ message: "Category not found" });
+      return res.status(404).json({ message: "Category not found" });
     }
 
-    res.json({
-      message: "Category deleted successfully",
-    });
+    res.json({ message: "Category deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

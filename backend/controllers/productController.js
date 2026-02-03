@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Product = require("../models/Product");
 const Category = require("../models/Category");
 const {
@@ -5,11 +6,15 @@ const {
   convertTimestampsToIST,
 } = require("../utils/dateUtils");
 
+
 /* =====================================================
    GET PRODUCTS (FILTER + SEARCH + SORT + PAGINATION)
 ===================================================== */
 const getProducts = async (req, res) => {
+      
   try {
+
+
     const {
       category = "all",
       search = "",
@@ -23,8 +28,8 @@ const getProducts = async (req, res) => {
 
     let query = {};
 
-    /* ---------- SEARCH (ONLY STRING FIELDS) ---------- */
-    if (search && search.trim()) {
+    /* ---------- SEARCH ---------- */
+    if (search.trim()) {
       const tokens = search.trim().split(/\s+/);
       query.$and = tokens.map((token) => ({
         $or: [
@@ -36,16 +41,32 @@ const getProducts = async (req, res) => {
       }));
     }
 
-    /* ---------- CATEGORY (SLUG → ObjectId) ---------- */
-    if (category !== "all" && category !== "recommended") {
-      const categoryDoc = await Category.findOne({
-        slug: category.toLowerCase(),
-      }).select("_id");
+    /* ---------- CATEGORY (SLUG OR ObjectId) ---------- */
+    if (category && category !== "all" && category !== "recommended") {
+      let categoryId = category;
 
-      if (categoryDoc) {
-        query.category = categoryDoc._id;
+      // If NOT a valid ObjectId, try to find by slug
+      if (!mongoose.Types.ObjectId.isValid(category)) {
+        const categoryDoc = await Category.findOne({ slug: category });
+        if (categoryDoc) {
+          categoryId = categoryDoc._id;
+        } else {
+          // ❌ Invalid slug AND invalid ID → return empty results
+          return res.json({
+            success: true,
+            products: [],
+            total: 0,
+            page: Number(page),
+            pages: 0,
+            hasMore: false,
+          });
+        }
       }
+
+      // ✅ Apply valid Category ID (either direct or resolved from slug)
+      query.category = categoryId;
     }
+
 
     /* ---------- RECOMMENDED ---------- */
     if (category === "recommended") {
@@ -56,14 +77,14 @@ const getProducts = async (req, res) => {
     }
 
     /* ---------- BRAND ---------- */
-    if (brands && brands.trim()) {
+    if (brands.trim()) {
       query.brand = { $in: brands.split(",").map((b) => b.trim()) };
     }
 
     /* ---------- PRICE ---------- */
     query.price = {
-      $gte: Number(minPrice) || 0,
-      $lte: Number(maxPrice) || 100000,
+      $gte: Number(minPrice),
+      $lte: Number(maxPrice),
     };
 
     /* ---------- SORT ---------- */
@@ -77,11 +98,13 @@ const getProducts = async (req, res) => {
     const limitInt = Math.min(100, Math.max(1, Number(limit)));
     const skip = (pageInt - 1) * limitInt;
 
-    const products = await Product.find(query)
-      .sort(sortOptions)
-      .skip(skip)
-      .limit(limitInt)
-      .lean();
+const products = await Product.find(query)
+  .populate("category", "name slug") // ✅ ADD THIS
+  .sort({ _id: -1 })
+  .limit(limit)
+  .skip((page - 1) * limit)
+  .lean();
+
 
     const total = await Product.countDocuments(query);
 
@@ -100,36 +123,6 @@ const getProducts = async (req, res) => {
 };
 
 /* =====================================================
-   🔍 TEXT SEARCH (AUTOCOMPLETE / FAST SEARCH)
-===================================================== */
-const searchProducts = async (req, res) => {
-  try {
-    const { q = "" } = req.query;
-
-    if (!q.trim()) {
-      return res.json({ success: true, products: [] });
-    }
-
-    const products = await Product.find(
-      { $text: { $search: q } },
-      { score: { $meta: "textScore" } }
-    )
-      .sort({ score: { $meta: "textScore" } })
-      .limit(10)
-      .select("name image category price brand")
-      .lean();
-
-    res.json({
-      success: true,
-      products: convertArrayTimestampsToIST(products),
-    });
-  } catch (error) {
-    console.error("❌ Search error:", error);
-    res.status(500).json({ success: false, message: "Search failed" });
-  }
-};
-
-/* =====================================================
    GET SINGLE PRODUCT
 ===================================================== */
 const getProductById = async (req, res) => {
@@ -140,7 +133,10 @@ const getProductById = async (req, res) => {
       return res.status(400).json({ message: "Invalid product ID format" });
     }
 
-    const product = await Product.findById(id).lean();
+    const product = await Product.findById(id)
+      .populate("category", "name slug") // ✅ CORRECT
+      .lean();
+
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
@@ -160,9 +156,8 @@ const getBrands = async (_, res) => {
   res.json(brands.sort());
 };
 
-/* =====================================================
-   EXPORTS ✅ (THIS IS WHAT YOU ASKED)
-===================================================== */
+const searchProducts = getProducts;
+
 module.exports = {
   getProducts,
   searchProducts,

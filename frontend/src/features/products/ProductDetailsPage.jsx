@@ -15,6 +15,7 @@ import { addToCart } from "@/store/cartSlice";
 import { addToWishlistAsync } from "@/store/wishlistSlice";
 import { useToast } from "@/context/ToastContext";
 import PriceDisplay from "@/components/PriceDisplay.jsx";
+import { getImageUrl } from "@/utils/imageUtils";
 
 const ProductDetailsPage = () => {
   const { id } = useParams();
@@ -98,7 +99,8 @@ const ProductDetailsPage = () => {
       return;
     }
 
-    dispatch(addToWishlistAsync(product));
+    dispatch(addToWishlistAsync(product._id));
+
     addToast("Added to wishlist", "success");
   };
 
@@ -110,7 +112,7 @@ const ProductDetailsPage = () => {
         {/* IMAGE */}
         <div>
           <img
-            src={product.image || "/placeholder.png"}
+            src={getImageUrl(product.image) || "/placeholder.png"}
             alt={product.name}
             className="w-full rounded-xl"
           />
@@ -119,7 +121,8 @@ const ProductDetailsPage = () => {
         {/* DETAILS */}
         <div className="flex flex-col">
           <span className="text-sm text-blue-600 font-bold uppercase">
-            {product.category}
+            {product.category?.name}
+
           </span>
 
           <h1 className="text-3xl font-extrabold mt-2">{product.name}</h1>
@@ -150,10 +153,9 @@ const ProductDetailsPage = () => {
                     key={size}
                     onClick={() => setSelectedSize(size)}
                     className={
-                      `px-4 py-2 border rounded ${
-                        selectedSize === size
-                          ? "bg-blue-600 text-white"
-                          : "bg-white"
+                      `px-4 py-2 border rounded ${selectedSize === size
+                        ? "bg-blue-600 text-white"
+                        : "bg-white"
                       }`
                     }
                   >

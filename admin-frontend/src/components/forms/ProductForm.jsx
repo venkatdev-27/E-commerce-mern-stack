@@ -13,22 +13,57 @@ export default function ProductForm({
     reset,
     formState: { errors }
   } = useForm({
-    defaultValues: initialData
+    defaultValues: {
+      ...initialData,
+      category: initialData.category?._id || initialData.category || "", // ✅ Extract ID if object
+      image: typeof initialData.image === "string" ? initialData.image : "" // ✅ STRICTLY ensure string (Handle {} case)
+    }
   });
 
   /* ================================
      RESET FORM ON EDIT MODE CHANGE
   ================================ */
   useEffect(() => {
-    reset(initialData);
+    reset({
+      ...initialData,
+      category: initialData.category?._id || initialData.category || "", // ✅ Handle populated category
+      image: typeof initialData.image === "string" ? initialData.image : ""
+    });
   }, [initialData, reset]);
 
   const handleFormSubmit = (data) => {
-    onSubmit({
-      ...data,
-      price: Number(data.price),
-      reviews: Number(data.reviews)
-    });
+    const formData = new FormData();
+
+    const {
+      imageFile, // 👈 destructure & remove
+      ...safeData
+    } = data;
+
+    // ✅ VALIDATION: Image is required
+    const hasImageFile = imageFile && imageFile.length > 0;
+    const hasImageUrl = typeof safeData.image === "string" && safeData.image.trim() !== "";
+
+    if (!hasImageFile && !hasImageUrl) {
+      alert("Please upload an image or provide an image URL.");
+      return;
+    }
+
+    formData.append("name", safeData.name.trim());
+    formData.append("category", safeData.category);
+    formData.append("price", Number(safeData.price));
+    formData.append("reviews", Number(safeData.reviews || 0));
+
+    if (safeData.description?.trim()) {
+      formData.append("description", safeData.description.trim());
+    }
+
+    if (imageFile?.length) {
+      formData.append("image", imageFile[0]);
+    } else if (typeof safeData.image === "string" && safeData.image.trim()) {
+      formData.append("image", safeData.image.trim());
+    }
+
+    onSubmit(formData);
   };
 
   return (
@@ -101,7 +136,7 @@ export default function ProductForm({
           >
             <option value="">Select category</option>
             {categories.map((cat) => (
-              <option key={cat.id} value={cat.slug}>
+              <option key={cat._id} value={cat._id}>
                 {cat.name}
               </option>
             ))}
@@ -133,6 +168,9 @@ export default function ProductForm({
         </div>
 
         {/* IMAGE INPUT */}
+        {/* =========================
+    PRODUCT IMAGE
+========================= */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <label style={{ color: 'var(--text-primary)', fontWeight: '600', fontSize: '14px' }}>
             Product Image
@@ -154,32 +192,42 @@ export default function ProductForm({
                 cursor: 'pointer'
               }}
             />
-            <small style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>Upload JPG or PNG file (recommended)</small>
+            <small style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>
+              Upload JPG or PNG file (recommended)
+            </small>
           </div>
 
           {/* OR Separator */}
-          <div style={{
-            textAlign: 'center',
-            color: 'var(--text-secondary)',
-            fontSize: '12px',
-            margin: '8px 0',
-            position: 'relative'
-          }}>
-            <span style={{
-              background: 'var(--bg-main)',
-              padding: '0 8px',
-              position: 'relative',
-              zIndex: 1
-            }}>OR</span>
-            <div style={{
-              position: 'absolute',
-              top: '50%',
-              left: 0,
-              right: 0,
-              height: '1px',
-              background: 'var(--border-color)',
-              zIndex: 0
-            }}></div>
+          <div
+            style={{
+              textAlign: 'center',
+              color: 'var(--text-secondary)',
+              fontSize: '12px',
+              margin: '8px 0',
+              position: 'relative'
+            }}
+          >
+            <span
+              style={{
+                background: 'var(--bg-main)',
+                padding: '0 8px',
+                position: 'relative',
+                zIndex: 1
+              }}
+            >
+              OR
+            </span>
+            <div
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: 0,
+                right: 0,
+                height: '1px',
+                background: 'var(--border-color)',
+                zIndex: 0
+              }}
+            />
           </div>
 
           {/* Image URL */}
@@ -196,7 +244,9 @@ export default function ProductForm({
               fontSize: '14px'
             }}
           />
-          <small style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>Alternative: Provide image URL</small>
+          <small style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
+            Alternative: Provide image URL
+          </small>
         </div>
       </div>
 

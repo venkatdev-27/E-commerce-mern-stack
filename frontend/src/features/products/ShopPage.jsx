@@ -1,10 +1,12 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import React, {  useReducer, useEffect, useState } from "react";
+import React, { useReducer, useEffect, useState } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import ProductCard from "@/components/ProductCard.jsx";
-import { getProducts, getBrands } from "@/api";
+import { getProducts, getBrands, getCategories } from "@/api";
+import { SearchX, Home, ChevronDown } from "lucide-react";
 
-import { SearchX, Home,  ChevronDown } from "lucide-react";
+
+
 
 const initialState = {
   category: "all",
@@ -12,7 +14,7 @@ const initialState = {
   maxPrice: 50000,
   searchQuery: "",
   selectedBrands: [],
-  
+
 };
 
 function filterReducer(state, action) {
@@ -28,12 +30,12 @@ function filterReducer(state, action) {
         ...state,
         selectedBrands:
           Array.isArray(state.selectedBrands) &&
-          state.selectedBrands.includes(action.payload)
+            state.selectedBrands.includes(action.payload)
             ? state.selectedBrands.filter((b) => b !== action.payload)
             : [...(state.selectedBrands || []), action.payload],
       };
-    
-    
+
+
     case "SET_PRICE_RANGE":
       return {
         ...state,
@@ -67,6 +69,8 @@ const ShopPage = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
+  const [categories, setCategories] = useState([]);
+
   // Filter options from API
   const [uniqueBrands, setUniqueBrands] = useState([]);
 
@@ -88,7 +92,22 @@ const ShopPage = () => {
     loadFilterOptions();
   }, []);
 
-  
+
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await getCategories();
+        setCategories(res || []);
+      } catch (err) {
+        console.error("Failed to load categories", err);
+      }
+    };
+    loadCategories();
+  }, []);
+
+
+
   useEffect(() => {
     const categoryParam = searchParams.get("category");
     const searchParam = searchParams.get("search");
@@ -110,45 +129,47 @@ const ShopPage = () => {
 
   // Fetch products when filters change
   useEffect(() => {
-  const fetchProducts = async () => {
-    setLoading(true);
-    setError(null);
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError(null);
 
-    try {
-     const params = {
-  category: state.category === "all" ? undefined : state.category,
-  search: state.searchQuery || undefined,
-  brands: state.selectedBrands.length ? state.selectedBrands.join(",") : undefined,
-  minPrice: state.minPrice,
-  maxPrice: state.maxPrice,
-  sortBy,
-  page,
-  limit: state.category === "all" ? 200 : 50,
-};
+      try {
+        const params = {
+          category: state.category, // ✅ Pass slug or ID directly (backend handles lookup)
+          search: state.searchQuery || undefined,
+          brands: state.selectedBrands.length
+            ? state.selectedBrands.join(",")
+            : undefined,
+          minPrice: state.minPrice,
+          maxPrice: state.maxPrice,
+          sortBy,
+          page,
+          limit: state.category === "all" ? 100 : 50,
+        };
 
-      // remove empty params
-      Object.keys(params).forEach(
-        (key) => params[key] === "" && delete params[key]
-      );
+        // remove empty params
+        Object.keys(params).forEach(
+          (key) => params[key] === undefined && delete params[key]
+        );
 
-      const res = await getProducts(params);
+        const res = await getProducts(params);
 
-      const productsData = res.products || [];
-      const totalCount = res.total || productsData.length;
+        setProducts(res.products || []);
+        setTotal(res.total || 0);
+        setHasMore(res.hasMore || false);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        setError("Failed to load products. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      setProducts(productsData);
-      setTotal(totalCount);
-      setHasMore(res.hasMore || false);
-    } catch (err) {
-      console.error("Error fetching products:", err);
-      setError("Failed to load products. Please try again.");
-    } finally {
-      setLoading(false);
+    // 🚨 wait until categories are loaded
+    if (categories.length) {
+      fetchProducts();
     }
-  };
-
-  fetchProducts();
-}, [state, sortBy, page]);
+  }, [state, sortBy, page, categories]);
 
   // Filtered products (now just the API response)
   const filteredProducts = products || [];
@@ -260,10 +281,10 @@ const ShopPage = () => {
                 No products found
               </h3>
               <p className="text-gray-500 max-w-sm mx-auto mb-8 leading-relaxed">
-  No products found
-  {state.searchQuery && ` for "${state.searchQuery}"`}
-  {state.category !== "all" && ` in "${state.category.replace("-", " ")}"`}
-</p>
+                No products found
+                {state.searchQuery && ` for "${state.searchQuery}"`}
+                {state.category !== "all" && ` in "${state.category.replace("-", " ")}"`}
+              </p>
 
               <button
                 onClick={() => window.location.reload()}

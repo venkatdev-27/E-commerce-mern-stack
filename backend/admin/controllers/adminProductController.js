@@ -17,6 +17,7 @@ const getAllProducts = async (req, res) => {
     limit = Math.max(1, Math.min(100, Math.floor(Number(limit)) || 10)); // Limit between 1-100
     search = String(search || "").trim();
     category = String(category || "").trim();
+    console.log("🔍 Admin getAllProducts Query:", { search, category, isValid: mongoose.Types.ObjectId.isValid(category) });
 
     let query = {};
 
@@ -30,11 +31,12 @@ const getAllProducts = async (req, res) => {
     }
 
     // Add category filter
-    if (category) {
+        if (mongoose.Types.ObjectId.isValid(category)) {
       query.category = category;
     }
 
-    let products = await Product.find(query)
+    const products = await Product.find(query)
+      .populate("category", "name slug") // ✅ IMPORTANT
       .sort({ _id: -1 })
       .limit(limit)
       .skip((page - 1) * limit)
@@ -42,22 +44,23 @@ const getAllProducts = async (req, res) => {
 
     const total = await Product.countDocuments(query);
 
-    const productsWithIST = convertArrayTimestampsToIST(products);
-
     res.json({
-      products: productsWithIST,
+      products: convertArrayTimestampsToIST(products),
       totalPages: Math.ceil(total / limit),
       currentPage: page,
       total
     });
   } catch (error) {
-    console.error('Error fetching products:', error);
-    res.status(500).json({ message: error.message });
+    console.error("Admin get products error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
 /* ================================
    GET SINGLE PRODUCT
+================================ */
+/* ================================
+   GET SINGLE PRODUCT (ADMIN)
 ================================ */
 const getProduct = async (req, res) => {
   try {
@@ -65,15 +68,18 @@ const getProduct = async (req, res) => {
       return res.status(400).json({ message: "Invalid product ID" });
     }
 
-    const product = await Product.findById(req.params.id).lean();
+    const product = await Product.findById(req.params.id)
+      .populate("category", "name slug") // ✅ FIX
+      .lean();
+
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    const productWithIST = convertTimestampsToIST(product);
-    res.json(productWithIST);
+    res.json(convertTimestampsToIST(product));
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Admin get product error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -82,33 +88,38 @@ const getProduct = async (req, res) => {
 ================================ */
 const createProduct = async (req, res) => {
   try {
-    console.log('Create product request body:', req.body);
-    console.log('Category value:', req.body.category);
-    console.log('Category type:', typeof req.body.category);
+    console.log("🔥 createProduct HIT");
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
+    console.log("Image type:", typeof req.body.image);
 
-    // Category is the name from frontend constants
-    const productData = {
-      ...req.body,
-      category: req.body.category?.trim(), // Trim category to avoid spaces
-    };
+    const productData = { ...req.body };
 
-    // Generate a unique id for the product
-    const existingProduct = await Product.findOne().sort({ id: -1 });
-    let nextId = 1;
-    if (existingProduct && existingProduct.id) {
-      const lastId = parseInt(existingProduct.id);
-      nextId = lastId + 1;
+    // 🔥 REMOVE INVALID IMAGE VALUE
+    // 🔥 REMOVE INVALID IMAGE VALUE
+    if (
+      typeof productData.image === "object" || 
+      productData.image === "null" || 
+      productData.image === "undefined" ||
+      productData.image === ""
+    ) {
+      delete productData.image;
     }
-    productData.id = String(nextId);
+
+    // ✅ FILE UPLOAD (multer)
+    if (req.file) {
+      productData.image = `/uploads/products/${req.file.filename}`;
+    }
+
+    // 🔢 custom numeric id (your logic)
+    const lastProduct = await Product.findOne().sort({ id: -1 });
+    productData.id = lastProduct ? String(Number(lastProduct.id) + 1) : "1";
 
     const product = await Product.create(productData);
 
-    // Don't populate category for create - just return basic product data
-    const productWithIST = convertTimestampsToIST(product.toObject());
-    res.status(201).json(productWithIST);
+    res.status(201).json(product);
   } catch (error) {
-    console.error('Create product error:', error);
-    console.error('Error details:', error);
+    console.error("❌ Create product error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -118,32 +129,42 @@ const createProduct = async (req, res) => {
 ================================ */
 const updateProduct = async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: "Invalid product ID" });
+    console.log("🔥 updateProduct HIT");
+    console.log("BODY:", req.body);
+    console.log("FILE:", req.file);
+    console.log("Image type:", typeof req.body.image);
+
+    const updateData = { ...req.body };
+
+    // ❌ remove broken image object
+    // ❌ remove broken image object or invalid strings
+    if (
+      typeof updateData.image === "object" || 
+      updateData.image === "null" || 
+      updateData.image === "undefined" ||
+      updateData.image === ""
+    ) {
+      delete updateData.image;
     }
 
-    // Trim category if provided
-    const updateData = { ...req.body };
-    if (updateData.category) {
-      updateData.category = updateData.category.trim();
+    // ✅ new uploaded file
+    if (req.file) {
+      updateData.image = `/uploads/products/${req.file.filename}`;
     }
 
     const product = await Product.findByIdAndUpdate(
       req.params.id,
       updateData,
       { new: true, runValidators: true }
-    ).lean();
+    );
 
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    const productWithIST = convertTimestampsToIST(product);
-    res.json(productWithIST);
+    res.json(product);
   } catch (error) {
+    console.error("❌ Update product error:", error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 /* ================================
    DELETE PRODUCT

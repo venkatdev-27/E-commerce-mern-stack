@@ -8,7 +8,7 @@ const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-});0
+});
 
 /* =========================
    REQUEST INTERCEPTOR

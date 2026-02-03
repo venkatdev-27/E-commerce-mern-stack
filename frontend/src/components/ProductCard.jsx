@@ -8,6 +8,7 @@ import {
 } from "@/store/wishlistSlice";
 import { useToast } from "@/context/ToastContext.jsx";
 import PriceDisplay from "@/components/PriceDisplay.jsx";
+import { getImageUrl } from "@/utils/imageUtils";
 
 const ProductCard = memo(({ product }) => {
   const dispatch = useAppDispatch();
@@ -58,7 +59,7 @@ const ProductCard = memo(({ product }) => {
       <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
         {product?.image ? (
           <img
-            src={product.image}
+            src={getImageUrl(product.image)}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             loading="lazy"
@@ -89,10 +90,9 @@ const ProductCard = memo(({ product }) => {
         <button
           onClick={handleToggleWishlist}
           className={`absolute top-2 right-2 p-1.5 rounded-full shadow-lg transition
-            ${
-              isWishlisted
-                ? "bg-white text-red-500"
-                : "bg-white text-gray-400 hover:text-red-500"
+            ${isWishlisted
+              ? "bg-white text-red-500"
+              : "bg-white text-gray-400 hover:text-red-500"
             }
           `}
         >
@@ -103,22 +103,24 @@ const ProductCard = memo(({ product }) => {
       {/* CONTENT */}
       <div className="p-3 flex flex-col">
         <div className="flex justify-between items-start mb-1">
-          <span className="text-[9px] uppercase font-bold text-gray-500">
-            {product?.category}
+          <span className="text-[9px] uppercase font-bold text-gray-500 truncate max-w-[80px]">
+            {/* If category is an object, show name. If string but looks like ID, show General. */}
+            {product?.category?.name ||
+              (typeof product?.category === 'string' && product.category.length < 20 ? product.category : "General")}
           </span>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5 md:gap-1">
             <Star size={10} className="text-yellow-400 fill-current" />
-            <span className="text-[10px] font-bold">
+            <span className="text-[10px] font-bold text-gray-700">
               {product?.rating ?? 0}
             </span>
-            <span className="text-[9px] text-gray-400">
+            <span className="text-[9px] text-gray-400 ml-0.5">
               ({product?.reviews ?? 0})
             </span>
           </div>
         </div>
 
-        <h3 className="font-bold text-xs mb-1 line-clamp-2 leading-tight">
+        <h3 className="font-bold text-xs mb-1 line-clamp-2 leading-tight text-gray-900">
           {product?.name}
         </h3>
 

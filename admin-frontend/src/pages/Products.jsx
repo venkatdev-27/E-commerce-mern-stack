@@ -6,16 +6,42 @@ import ConfirmDialog from "../components/common/ConfirmDialog";
 import EmptyState from "../components/common/EmptyState";
 import ProductForm from "../components/forms/ProductForm";
 import { getProducts, deleteProduct, createProduct, updateProduct } from "../api/productApi";
-import { CATEGORIES } from "../utils/constants";
+import { getCategories } from "../api/categoryApi";
 
 // Create a map for category names
-const categoryMap = CATEGORIES.reduce((map, cat) => {
-  map[cat.id] = cat.name;
-  return map;
-}, {});
 
+
+// Products Management Page
 export default function Products() {
   const [products, setProducts] = useState([]);
+
+  // ✅ Helper to fix Image URLs
+  const getImageUrl = (image) => {
+    if (!image) return "";
+
+    // 1. Check for Base64 Data URI (Return as is)
+    // This prevents the "431 Request Header Fields Too Large" error
+    if (image.startsWith("data:")) {
+      return image;
+    }
+
+    // 2. Fix Windows Backslashes
+    let finalImage = image.replace(/\\/g, "/");
+
+    if (finalImage.startsWith("http://localhost:5174")) {
+      finalImage = finalImage.replace("5174", "5000");
+    } else if (finalImage.startsWith("http")) {
+      // already valid
+    } else {
+      // Ensure leading slash for relative paths
+      if (!finalImage.startsWith("/")) {
+        finalImage = "/" + finalImage;
+      }
+      finalImage = `http://localhost:5000${finalImage}`;
+    }
+
+    return finalImage;
+  };
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,16 +66,7 @@ export default function Products() {
     setError("");
 
     try {
-      const queryParams = {
-        page,
-        limit: 10
-      };
-
-      // Add filters if they exist
-      if (filters.search) queryParams.search = filters.search;
-      if (filters.category) queryParams.category = filters.category;
-
-      const response = await getProducts(queryParams);
+      const response = await getProducts({ page, limit: 10 });
       setProducts(response.products || []);
       setTotalPages(response.totalPages || 1);
     } catch (err) {
@@ -67,7 +84,15 @@ export default function Products() {
      SET CATEGORIES
   ================================ */
   useEffect(() => {
-    setCategories(CATEGORIES);
+    const loadCategories = async () => {
+      try {
+        const data = await getCategories();
+        setCategories(data);
+      } catch (err) {
+        console.error("Failed to load categories:", err);
+      }
+    };
+    loadCategories();
   }, []);
 
   /* ================================
@@ -78,7 +103,6 @@ export default function Products() {
     try {
       await deleteProduct(id);
 
-      // If last item on page deleted, go back one page safely
       if (products.length === 1 && currentPage > 1) {
         setCurrentPage((p) => p - 1);
       } else {
@@ -93,60 +117,30 @@ export default function Products() {
   };
 
   /* ================================
-     HANDLE ADD PRODUCT
+     ADD / EDIT
   ================================ */
   const handleAddProduct = () => {
     setEditingProduct(null);
     setShowForm(true);
   };
 
-  /* ================================
-     HANDLE EDIT PRODUCT
-  ================================ */
   const handleEditProduct = (product) => {
     setEditingProduct(product);
     setShowForm(true);
   };
 
   /* ================================
-     HANDLE FORM SUBMIT
+     FORM SUBMIT (MULTER)
   ================================ */
-  const handleFormSubmit = async (productData) => {
+  const handleFormSubmit = async (formData) => {
     setSaving(true);
     try {
-      // Handle image upload vs URL
-      let finalData = { ...productData };
-
-      if (productData.imageFile && productData.imageFile[0]) {
-        // File uploaded - for now, we'll use a placeholder URL
-        // In a real implementation, you'd upload the file to a server
-        const file = productData.imageFile[0];
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
-          throw new Error("Image file must be less than 5MB");
-        }
-        if (!file.type.match('image/(jpeg|jpg|png)')) {
-          throw new Error("Only JPG and PNG files are allowed");
-        }
-        // For now, create a data URL for preview (replace with actual upload)
-        const reader = new FileReader();
-        await new Promise((resolve, reject) => {
-          reader.onload = () => {
-            finalData.image = reader.result;
-            resolve();
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-      }
-
-      // Remove file data before sending to API
-      delete finalData.imageFile;
-
       if (editingProduct) {
-        await updateProduct(editingProduct._id, finalData);
+        await updateProduct(editingProduct._id, formData);
       } else {
-        await createProduct(finalData);
+        await createProduct(formData);
       }
+
       setShowForm(false);
       setEditingProduct(null);
       fetchProducts(currentPage);
@@ -197,7 +191,7 @@ export default function Products() {
           </button>
         </div>
 
-        
+
 
         {showForm && (
           <div style={{ marginBottom: '20px', padding: '20px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '10px' }}>
@@ -244,13 +238,14 @@ export default function Products() {
               <tbody>
                 {products.map((product, index) => (
                   <tr key={product._id} style={{ borderTop: '1px solid var(--border-color)' }}>
+                    {console.log("Rendering Product:", product.name, "Image:", product.image)}
                     <td style={{ padding: '15px', color: 'var(--text-primary)', textAlign: 'center', fontWeight: '600' }}>
                       {(currentPage - 1) * 10 + index + 1}
                     </td>
                     <td style={{ padding: '15px', color: 'var(--text-primary)' }}>
                       {product.image ? (
                         <img
-                          src={product.image}
+                          src={getImageUrl(product.image)}
                           alt={product.name}
                           style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px' }}
                         />
@@ -259,7 +254,7 @@ export default function Products() {
                       )}
                     </td>
                     <td style={{ padding: '15px', color: 'var(--text-primary)' }}>{product.name}</td>
-                    <td style={{ padding: '15px', color: 'var(--text-primary)' }}>{product.category || 'N/A'}</td>
+                    <td style={{ padding: '15px', color: 'var(--text-primary)' }}>{product.category?.name || product.category || 'N/A'}</td>
                     <td style={{ padding: '15px', color: 'var(--text-primary)' }}>₹{product.price}</td>
                     <td style={{ padding: '15px', color: 'var(--text-primary)' }}>{product.reviews}</td>
                     <td style={{ padding: '15px', textAlign: 'center' }}>

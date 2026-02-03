@@ -11,6 +11,7 @@ const {
 /* =========================
    🔍 REAL SEARCH (MUST BE FIRST)
 ========================= */
+
 router.get("/search", searchProducts);
 
 /* =========================

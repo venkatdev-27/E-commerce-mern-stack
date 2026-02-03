@@ -21,29 +21,31 @@ export default function CategoryForm({
   useEffect(() => {
     reset(initialData);
   }, [initialData, reset]);
-
   const handleFormSubmit = (data) => {
-  const submitData = new FormData();
+    const formData = new FormData();
 
-  // REQUIRED
-  submitData.append("name", data.name.trim());
+    // REQUIRED FIELD
+    formData.append("name", data.name.trim());
 
-  // OPTIONAL
-  if (data.description?.trim()) {
-    submitData.append("description", data.description.trim());
-  }
+    // OPTIONAL TEXT FIELD
+    if (data.description && data.description.trim() !== "") {
+      formData.append("description", data.description.trim());
+    }
 
-  // ✅ FILE HAS PRIORITY
-  if (data.imageFile && data.imageFile[0]) {
-    submitData.append("imageFile", data.imageFile[0]);
-  }
-  // ✅ ELSE URL
-  else if (data.image?.trim()) {
-    submitData.append("image", data.image.trim());
-  }
+    /**
+     * IMAGE HANDLING (MATCHES MULTER)
+     * Priority:
+     * 1️⃣ Uploaded file → req.file
+     * 2️⃣ Image URL → req.body.image
+     */
+    if (data.imageFile && data.imageFile.length > 0) {
+      formData.append("image", data.imageFile[0]); // ✅ multer key
+    } else if (typeof data.image === "string" && data.image.trim() !== "") {
+      formData.append("image", data.image.trim());
+    }
 
-  onSubmit(submitData);
-};
+    onSubmit(formData);
+  };
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '600px' }}>
@@ -101,72 +103,103 @@ export default function CategoryForm({
       {/* =========================
           IMAGE INPUT FIELD
       ========================= */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        <label style={{ color: 'var(--text-primary)', fontWeight: '600', fontSize: '14px' }}>
+      {/* =========================
+    CATEGORY IMAGE
+========================= */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+        <label
+          style={{
+            color: "var(--text-primary)",
+            fontWeight: "600",
+            fontSize: "14px",
+          }}
+        >
           Category Image
         </label>
 
-        {/* File Upload */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {/* FILE UPLOAD */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <input
             type="file"
             accept=".jpg,.jpeg,.png"
             {...register("imageFile")}
             style={{
-              padding: '6px',
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '4px',
-              color: 'var(--text-primary)',
-              fontSize: '14px',
-              cursor: 'pointer',
-              height: '36px'
+              padding: "6px",
+              background: "var(--bg-secondary)",
+              border: "1px solid var(--border-color)",
+              borderRadius: "4px",
+              color: "var(--text-primary)",
+              fontSize: "14px",
+              cursor: "pointer",
+              height: "36px",
             }}
           />
-          <small style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>Upload JPG or PNG file (recommended)</small>
+          <small
+            style={{
+              color: "var(--text-secondary)",
+              fontSize: "11px",
+            }}
+          >
+            Upload JPG or PNG file (recommended)
+          </small>
         </div>
 
-        {/* OR Separator */}
-        <div style={{
-          textAlign: 'center',
-          color: 'var(--text-secondary)',
-          fontSize: '12px',
-          margin: '8px 0',
-          position: 'relative'
-        }}>
-          <span style={{
-            background: 'var(--bg-main)',
-            padding: '0 8px',
-            position: 'relative',
-            zIndex: 1
-          }}>OR</span>
-          <div style={{
-            position: 'absolute',
-            top: '50%',
-            left: 0,
-            right: 0,
-            height: '1px',
-            background: 'var(--border-color)',
-            zIndex: 0
-          }}></div>
+        {/* OR DIVIDER */}
+        <div
+          style={{
+            textAlign: "center",
+            color: "var(--text-secondary)",
+            fontSize: "12px",
+            margin: "8px 0",
+            position: "relative",
+          }}
+        >
+          <span
+            style={{
+              background: "var(--bg-main)",
+              padding: "0 8px",
+              position: "relative",
+              zIndex: 1,
+            }}
+          >
+            OR
+          </span>
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: 0,
+              right: 0,
+              height: "1px",
+              background: "var(--border-color)",
+              zIndex: 0,
+            }}
+          />
         </div>
 
-        {/* Image URL */}
+        {/* IMAGE URL */}
         <input
           type="text"
           placeholder="https://example.com/category-image.jpg"
           {...register("image")}
           style={{
-            padding: '8px 12px',
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '4px',
-            color: 'var(--text-primary)',
-            fontSize: '14px',
-            height: '36px'
+            padding: "8px 12px",
+            background: "var(--bg-secondary)",
+            border: "1px solid var(--border-color)",
+            borderRadius: "4px",
+            color: "var(--text-primary)",
+            fontSize: "14px",
+            height: "36px",
           }}
         />
-        <small style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>Alternative: Provide image URL</small>
+        <small
+          style={{
+            color: "var(--text-secondary)",
+            fontSize: "12px",
+          }}
+        >
+          Alternative: Provide image URL
+        </small>
       </div>
 
       {/* =========================

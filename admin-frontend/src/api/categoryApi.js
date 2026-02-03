@@ -6,47 +6,33 @@ import adminAxios from "./adminAxios";
 export const getCategories = async () => {
   try {
     const { data } = await adminAxios.get("/categories");
-    return data;
+    return data.categories || data;
   } catch (error) {
-    throw new Error(
-      error.response?.data?.message || "Failed to fetch categories"
-    );
+    throw new Error(error.response?.data?.message || "Failed to fetch categories");
   }
 };
 
 /* ================================
    CREATE CATEGORY
 ================================ */
-export const createCategory = async (category) => {
+export const createCategory = async (categoryData) => {
   try {
-    const config = category instanceof FormData ? {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    } : {};
-
-    const { data } = await adminAxios.post("/categories", category, config);
+    const { data } = await adminAxios.post("/categories", categoryData);
     return data;
   } catch (error) {
-    throw new Error(
-      error.response?.data?.message || "Failed to create category"
-    );
+    throw new Error(error.response?.data?.message || "Failed to create category");
   }
 };
 
 /* ================================
    UPDATE CATEGORY
 ================================ */
-export const updateCategory = async (id, category) => {
+export const updateCategory = async (id, categoryData) => {
   try {
-    const config = category instanceof FormData ? {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    } : {};
-
-    const { data } = await adminAxios.put(`/categories/${id}`, category, config);
+    const { data } = await adminAxios.put(`/categories/${id}`, categoryData);
     return data;
   } catch (error) {
-    throw new Error(
-      error.response?.data?.message || "Failed to update category"
-    );
+    throw new Error(error.response?.data?.message || "Failed to update category");
   }
 };
 
@@ -58,8 +44,6 @@ export const deleteCategory = async (id) => {
     const { data } = await adminAxios.delete(`/categories/${id}`);
     return data;
   } catch (error) {
-    throw new Error(
-      error.response?.data?.message || "Failed to delete category"
-    );
+    throw new Error(error.response?.data?.message || "Failed to delete category");
   }
 };
