@@ -29,7 +29,7 @@ export default function Products() {
     let finalImage = image.replace(/\\/g, "/");
 
     if (finalImage.startsWith("http://localhost:5174")) {
-      finalImage = finalImage.replace("5174", "5000");
+      finalImage = finalImage.replace("5174", "5000"); // Legacy fix
     } else if (finalImage.startsWith("http")) {
       // already valid
     } else {
@@ -37,7 +37,7 @@ export default function Products() {
       if (!finalImage.startsWith("/")) {
         finalImage = "/" + finalImage;
       }
-      finalImage = `http://localhost:5000${finalImage}`;
+      finalImage = `\${import.meta.env.VITE_ADMIN_API_BASE_URL || "https://e-commerce-mern-stack-i66g.onrender.com"}\${finalImage}`;
     }
 
     return finalImage;

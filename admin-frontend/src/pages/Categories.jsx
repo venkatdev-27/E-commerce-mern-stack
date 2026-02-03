@@ -31,7 +31,7 @@ export default function Categories() {
     if (!finalImage.startsWith("/")) {
       finalImage = "/" + finalImage;
     }
-    return `http://localhost:5000${finalImage}`; // Prepend backend URL
+    return `\${import.meta.env.VITE_ADMIN_API_BASE_URL || "https://e-commerce-mern-stack-i66g.onrender.com"}\${finalImage}`; // Prepend backend URL
   };
   const [loading, setLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(null);
