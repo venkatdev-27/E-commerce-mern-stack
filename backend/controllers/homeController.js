@@ -33,7 +33,7 @@ exports.getHomePageData = async (req, res) => {
     // Helper: get category id
     const getCategoryId = async (slug) => {
       const cat = await Category.findOne({ slug }).select("_id").lean();
-      return cat?._id || null;
+      return cat?._id;
     };
 
     // Helper: fetch products

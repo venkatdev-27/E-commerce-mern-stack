@@ -41,6 +41,8 @@ productSchema.index({ category: 1, price: -1 });
 productSchema.index({ brand: 1 });
 productSchema.index({ isFlashSale: 1 });
 productSchema.index({ isBestSeller: 1 });
+productSchema.index({ createdAt: -1 });
+productSchema.index({ category: 1, createdAt: -1 });
 productSchema.index({
   name: "text",
   description: "text",
