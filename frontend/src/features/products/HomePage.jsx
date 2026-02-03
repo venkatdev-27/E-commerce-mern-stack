@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Truck, Shield, Clock, RotateCcw, Zap, TrendingUp } from 'lucide-react';
 import ProductCard from '@/components/ProductCard.jsx';
@@ -61,6 +61,9 @@ const HomePage = () => {
     justForYou: []
   });
 
+  // Timer State
+  const [targetDate, setTargetDate] = useState(Date.now() + 4000);
+
   // Carousel Effect
   useEffect(() => {
     const timer = setInterval(() => {
@@ -90,7 +93,7 @@ const HomePage = () => {
         // 2. Fetch from API
         // Axios interceptor returns response.data directly
         // Backend returns: { success: true, data: { ... } }
-               const response = await getHomePageData();
+        const response = await getHomePageData();
 
         if (!response?.success) {
           throw new Error("Invalid home page response");
@@ -140,9 +143,9 @@ const HomePage = () => {
   );
 
   const categoriesToShow = useMemo(
-  () => CATEGORIES.filter((cat) => cat.id !== "home"),
-  []
-);
+    () => CATEGORIES.filter((cat) => cat.id !== "home"),
+    []
+  );
 
   if (loading) return <HomeSkeleton />;
 
@@ -232,7 +235,9 @@ const HomePage = () => {
                         Ends in
                       </span>
                       <Countdown
-                        date={new Date(Date.now() + 12 * 60 * 60 * 1000)}
+                        key={targetDate}
+                        date={targetDate}
+                        onComplete={() => setTargetDate(Date.now() + 12 * 60 * 60 * 1000)}
                         renderer={({ hours, minutes, seconds, completed }) => {
                           if (completed) {
                             return <div className="font-mono text-xs md:text-lg font-bold text-white tracking-widest">00:00:00</div>;
