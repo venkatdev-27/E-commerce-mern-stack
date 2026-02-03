@@ -16,7 +16,7 @@ const slides = [
     title: 'Fashion Festival',
     subtitle: 'Up to 70% Off on Top Brands',
     cta: 'Shop Sale',
-    link: '/shop?category=women-clothes'
+    link: '/shop?category=womens-fashion'
   },
   {
     id: 2,
@@ -32,7 +32,7 @@ const slides = [
     title: 'Beauty & Wellness',
     subtitle: 'Discover your natural glow with premium beauty products.',
     cta: 'Shop Beauty',
-    link: '/shop?category=beauty'
+    link: '/shop?category=beauty-care'
   }
 ];
 
@@ -267,7 +267,7 @@ const HomePage = () => {
             </h2>
             <div className="flex overflow-x-auto pb-4 gap-4 md:gap-8 no-scrollbar snap-x px-2 md:px-0 md:flex-wrap md:justify-center">
               {categoriesToShow.map(cat =>
-                <Link key={cat.id} to={`/shop?category=${cat.id}`} className="group flex flex-col items-center gap-2 md:gap-3 min-w-[70px] md:w-32 snap-center">
+                <Link key={cat.id} to={`/shop?category=${cat.slug || cat.id}`} className="group flex flex-col items-center gap-2 md:gap-3 min-w-[70px] md:w-32 snap-center">
                   <div className="w-16 h-16 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-blue-50 to-indigo-100 p-1 md:p-1.5 shadow-sm group-hover:shadow-lg border-2 border-transparent group-hover:border-indigo-400 relative overflow-hidden transition-all duration-300">
                     <img src={`https://picsum.photos/seed/${cat.name}/200`} alt={cat.name} className="w-full h-full object-cover rounded-full grayscale group-hover:grayscale-0 transition-all duration-300" />
                   </div>
@@ -371,7 +371,7 @@ const HomePage = () => {
             {/* Men's Fashion */}
             {homeData.mensFashion.length > 0 && (
               <div className="mb-12">
-                <SectionHeader title="Men's Premium Collection" subtitle="Sophisticated styles for modern gentlemen" link="/shop?category=men-clothes" />
+                <SectionHeader title="Men's Premium Collection" subtitle="Sophisticated styles for modern gentlemen" link="/shop?category=mens-fashion" />
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   {homeData.mensFashion.map(product =>
                     <div key={product._id} className="min-h-[160px] sm:min-h-[220px] md:min-h-[280px]">
@@ -385,7 +385,7 @@ const HomePage = () => {
             {/* Women's Fashion */}
             {homeData.womensFashion.length > 0 && (
               <div>
-                <SectionHeader title="Women's Trending Styles" subtitle="Elegance redefined for every occasion" link="/shop?category=women-clothes" />
+                <SectionHeader title="Women's Trending Styles" subtitle="Elegance redefined for every occasion" link="/shop?category=womens-fashion" />
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   {homeData.womensFashion.map(product =>
                     <div key={product._id} className="min-h-[160px] sm:min-h-[220px] md:min-h-[280px]">

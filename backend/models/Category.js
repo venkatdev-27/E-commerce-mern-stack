@@ -11,14 +11,15 @@ const categorySchema = new mongoose.Schema(
 
     slug: {
       type: String,
+      required: true,
       unique: true,
       lowercase: true,
       trim: true,
-      sparse: true,
     },
 
     image: {
-      type: String, // image / icon URL
+      type: String,
+      trim: true,
       default: "",
     },
 
@@ -34,5 +35,7 @@ const categorySchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Index
 
 module.exports = mongoose.model("Category", categorySchema);

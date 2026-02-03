@@ -1,4 +1,5 @@
 const Product = require("../models/Product");
+const Category = require("../models/Category");
 const {
   convertArrayTimestampsToIST,
   convertTimestampsToIST,
@@ -32,7 +33,7 @@ const getProducts = async (req, res) => {
     let query = {};
 
     /* ---------- SEARCH ---------- */
-    if (search) {
+    if (search && search.trim()) {
       const tokens = search.trim().split(/\s+/);
       query.$and = tokens.map((token) => ({
         $or: [
@@ -46,28 +47,49 @@ const getProducts = async (req, res) => {
     }
 
     /* ---------- CATEGORY ---------- */
-   /* ---------- CATEGORY ---------- */
-if (category !== "all") {
-  if (category === "recommended") {
-    query.$or = [
-      { rating: { $gte: 4 } },
-      { discount: { $gte: 20 } },
-    ];
-  } else {
-    const normalizedCategory = normalizeCategory(category);
-    query.category = new RegExp(`^${normalizedCategory}$`, "i");
-  }
-}
+    if (category !== "all") {
+      if (category === "recommended") {
+        query.$or = [
+          { rating: { $gte: 4 } },
+          { discount: { $gte: 20 } },
+        ];
+      } else {
+        // Try to find category by slug first, then fall back to name matching
+        try {
+          const categoryDoc = await Category.findOne({ 
+            $or: [
+              { slug: category.toLowerCase() },
+              { slug: normalizeCategory(category) }
+            ]
+          });
+          
+          if (categoryDoc) {
+            query.category = categoryDoc._id;
+          } else {
+            // Fallback to string matching if category not found
+            const normalizedCategory = normalizeCategory(category);
+            query.category = new RegExp(`^${normalizedCategory}$`, "i");
+          }
+        } catch (error) {
+          console.error("Error finding category:", error);
+          // Fallback to string matching
+          const normalizedCategory = normalizeCategory(category);
+          query.category = new RegExp(`^${normalizedCategory}$`, "i");
+        }
+      }
+    }
 
     /* ---------- BRAND ---------- */
-    if (brands) {
-      query.brand = { $in: brands.split(",") };
+    if (brands && brands.trim()) {
+      query.brand = { $in: brands.split(",").map(b => b.trim()) };
     }
 
     /* ---------- PRICE ---------- */
+    const minPriceNum = Number(minPrice) || 0;
+    const maxPriceNum = Number(maxPrice) || 100000;
     query.price = {
-      $gte: Number(minPrice),
-      $lte: Number(maxPrice),
+      $gte: minPriceNum,
+      $lte: maxPriceNum,
     };
 
     /* ---------- SORT ---------- */
@@ -78,12 +100,14 @@ if (category !== "all") {
     else sortOptions = { isNewArrival: -1, discount: -1, rating: -1 };
 
     /* ---------- PAGINATION ---------- */
-    const skip = (page - 1) * limit;
+    const pageInt = Math.max(1, Number(page) || 1);
+    const limitInt = Math.min(100, Math.max(1, Number(limit) || 50)); // Cap limit at 100
+    const skip = (pageInt - 1) * limitInt;
 
     const products = await Product.find(query)
       .sort(sortOptions)
       .skip(skip)
-      .limit(Number(limit))
+      .limit(limitInt)
       .lean();
 
     const total = await Product.countDocuments(query);
@@ -91,8 +115,8 @@ if (category !== "all") {
     res.json({
       products: convertArrayTimestampsToIST(products),
       total,
-      page: Number(page),
-      pages: Math.ceil(total / limit),
+      page: pageInt,
+      pages: Math.ceil(total / limitInt),
       hasMore: skip + products.length < total,
     });
   } catch (error) {

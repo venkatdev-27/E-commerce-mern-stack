@@ -6,20 +6,18 @@ const productSchema = new mongoose.Schema(
     description: { type: String, trim: true },
     price: { type: Number, required: true, min: 0 },
 
-    // MUST STORE CATEGORY SLUG
-category: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "Category",
-  required: true,
-},
-
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
 
     subCategory: { type: String, trim: true },
     brand: { type: String, trim: true },
     color: { type: String, trim: true },
     sizes: [String],
 
-    image: { type: String, required: true },
+    image: { type: String, required: true, trim: true },
 
     rating: { type: Number, default: 4, min: 0, max: 5 },
     reviews: { type: Number, default: 0, min: 0 },
@@ -38,13 +36,15 @@ category: {
   { timestamps: true }
 );
 
+// Indexes
 productSchema.index({ category: 1, price: -1 });
 productSchema.index({ brand: 1 });
+productSchema.index({ isFlashSale: 1 });
+productSchema.index({ isBestSeller: 1 });
 productSchema.index({
   name: "text",
   description: "text",
   brand: "text",
-  category: "text",
   subCategory: "text",
 });
 

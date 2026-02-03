@@ -7,7 +7,13 @@ const { getHomePageData } = require("../controllers/homeController");
  * @desc    Fetch optimized Home Page data
  * @access  Public
  */
-router.get("/", getHomePageData);
+router.get("/", async (req, res, next) => {
+  try {
+    await getHomePageData(req, res);
+  } catch (error) {
+    next(error);
+  }
+});
 
 /**
  * @route   GET /api/home/ping
@@ -15,7 +21,10 @@ router.get("/", getHomePageData);
  * @access  Public
  */
 router.get("/ping", (req, res) => {
-  res.json({ success: true, message: "Home route is working" });
+  return res.status(200).json({
+    success: true,
+    message: "Home route is working",
+  });
 });
 
 module.exports = router;
