@@ -209,14 +209,14 @@ const handleOtpSubmit = async (e) => {
               </button>
             </div>
 
-            <div className="flex justify-end">
+         {/*  <div className="flex justify-end">
               <Link
                 to="/forgot-password"
                 className="text-sm text-blue-600 hover:underline"
               >
                 Forgot Password?
               </Link>
-            </div>
+            </div> */}
 
             {error && <p className="text-red-600 text-sm">{error}</p>}
 

@@ -126,14 +126,7 @@ const MyOrdersPage = () => {
                     </span>
                   </div>
 
-                  <div>
-                    <span className="block text-xs text-gray-500">
-                      Total
-                    </span>
-                    <span className="font-semibold">
-                      ₹{order.totalAmount.toFixed(2)}
-                    </span>
-                  </div>
+                 
 
                   <div>
                     <span className="block text-xs text-gray-500">
