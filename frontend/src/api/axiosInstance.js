@@ -8,7 +8,7 @@ const axiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-});
+});0
 
 /* =========================
    REQUEST INTERCEPTOR
@@ -38,7 +38,7 @@ axiosInstance.interceptors.response.use(
       error.response?.data || error.message
     );
 
-    if (error.response?.status === 401) {
+    if (error.response?.status === 400) {
       // 🔥 FULL AUTH RESET (prevents crashes)
       localStorage.removeItem("token");
       localStorage.removeItem("user");

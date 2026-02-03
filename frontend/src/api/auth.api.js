@@ -15,7 +15,7 @@ export const sendOTP = async (email) => {
 
 // VERIFY OTP
 export const verifyOTP = async (otpToken, otp) => {
-  return await axiosInstance.post("/auth/verify-otp", {
+  return await axiosInstance.post("/api/auth/verify-otp", {
     otpToken,
     otp: String(otp),
   });

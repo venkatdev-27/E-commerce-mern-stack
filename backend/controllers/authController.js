@@ -26,36 +26,44 @@ const generateAuthResponse = (user) => {
 /* ================= SEND OTP (LOGIN) ================= */
 exports.sendOTP = async (req, res) => {
   try {
+    console.log("[SEND OTP] Request received", req.body);
+
     const { email } = req.body;
     if (!email) {
+      console.error("[SEND OTP] Email is missing");
       return res.status(400).json({ success: false, message: "Email is required" });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
+      console.error(`[SEND OTP] Email not registered: ${email}`);
       return res.status(400).json({ success: false, message: "Email not registered" });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log(`[SEND OTP] Generated OTP: ${otp}`);
 
     const otpToken = jwt.sign(
       { email, otp, type: "login" },
       process.env.JWT_SECRET,
-      { expiresIn: "2m" } // ⬅️ increased for mobile delay
+      { expiresIn: "10m" } // ⬅️ increased for mobile delay
     );
+    console.log(`[SEND OTP] Generated OTP Token: ${otpToken}`);
 
     const result = await sendOtpEmail(email, otp);
     if (!result.success) {
+      console.error(`[SEND OTP] Failed to send OTP to ${email}`);
       return res.status(500).json({ success: false, message: "Failed to send OTP" });
     }
 
+    console.log(`[SEND OTP] OTP sent successfully to ${email}`);
     res.json({
       success: true,
       message: "OTP sent successfully",
       otpToken,
     });
   } catch (error) {
-    console.error("SEND OTP ERROR 👉", error);
+    console.error("[SEND OTP] Server error", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -63,28 +71,39 @@ exports.sendOTP = async (req, res) => {
 /* ================= VERIFY OTP ================= */
 exports.verifyOTP = async (req, res) => {
   try {
+    console.log("[DEBUG] verifyOTP method called");
+    console.log("[DEBUG] Request body:", req.body);
+
     const { otpToken, otp } = req.body;
     if (!otpToken || !otp) {
+      console.error("[DEBUG] Missing otpToken or otp");
       return res.status(400).json({ success: false, message: "OTP required" });
     }
 
+    console.log("[DEBUG] Decoding token...");
     const decoded = jwt.verify(otpToken, process.env.JWT_SECRET);
+    console.log("[DEBUG] Token decoded:", decoded);
 
-    if (decoded.type !== "login" || decoded.otp !== otp) {
+    if (decoded.type !== "login" || String(decoded.otp) !== String(otp)) {
+      console.error("[DEBUG] Invalid OTP", { decodedOtp: decoded.otp, providedOtp: otp });
       return res.status(400).json({ success: false, message: "Invalid OTP" });
     }
 
+    console.log("[DEBUG] Looking up user...");
     const user = await User.findOne({ email: decoded.email });
     if (!user) {
+      console.error(`[DEBUG] User not found: ${decoded.email}`);
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
+    console.log("[DEBUG] OTP verified successfully");
     res.json(generateAuthResponse(user));
   } catch (error) {
     if (error.name === "TokenExpiredError") {
+      console.error("[DEBUG] OTP expired", error);
       return res.status(400).json({ success: false, message: "OTP expired" });
     }
-    console.error("VERIFY OTP ERROR 👉", error);
+    console.error("[DEBUG] Server error", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -143,7 +162,11 @@ exports.login = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email not registered" });
     }
 
+    console.log("[LOGIN DEBUG] Entered password:", password);
+    console.log("[LOGIN DEBUG] Stored hash:", user.password);
+
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log("[LOGIN] Password comparison result:", isMatch);
     if (!isMatch) {
       return res.status(400).json({ success: false, message: "Invalid password" });
     }
@@ -204,10 +227,9 @@ exports.verifyResetOTP = async (req, res) => {
 
     const decoded = jwt.verify(otpToken, process.env.JWT_SECRET);
 
-    if (decoded.type !== "reset" || decoded.otp !== otp) {
+    if (decoded.type !== "reset" || String(decoded.otp) !== String(otp)) {
       return res.status(400).json({ success: false, message: "Invalid OTP" });
     }
-
     res.json({
       success: true,
       message: "OTP verified successfully",
@@ -227,20 +249,23 @@ exports.resetPassword = async (req, res) => {
   try {
     const { otpToken, otp, newPassword, confirmPassword } = req.body;
 
+    // Validate required fields
     if (!otpToken || !otp || !newPassword || !confirmPassword) {
-      return res.status(400).json({ success: false, message: "All fields required" });
+      return res.status(400).json({ success: false, message: "OTP token, OTP, and passwords are required" });
     }
 
+    // Check if passwords match
     if (newPassword !== confirmPassword) {
       return res.status(400).json({ success: false, message: "Passwords do not match" });
     }
 
+    // Verify the OTP token
     const decoded = jwt.verify(otpToken, process.env.JWT_SECRET);
-
-    if (decoded.type !== "reset" || decoded.otp !== otp) {
+    if (decoded.otp !== otp) {
       return res.status(400).json({ success: false, message: "Invalid OTP" });
     }
 
+    // Proceed with password reset logic (e.g., update the user's password in the database)
     const user = await User.findOne({ email: decoded.email });
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
@@ -249,10 +274,7 @@ exports.resetPassword = async (req, res) => {
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
 
-    res.json({
-      success: true,
-      message: "Password reset successful",
-    });
+    res.status(200).json({ success: true, message: "Password reset successfully" });
   } catch (error) {
     if (error.name === "TokenExpiredError") {
       return res.status(400).json({ success: false, message: "OTP expired" });
@@ -286,6 +308,29 @@ exports.getProfile = async (req, res) => {
       },
     });
   } catch (error) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+/* ================= VERIFY RESET PASSWORD ================= */
+exports.verifyResetPassword = async (req, res) => {
+  try {
+    const { otpToken } = req.body;
+
+    console.log("[VERIFY RESET PASSWORD] Request body:", req.body);
+
+    if (!otpToken) {
+      return res.status(400).json({ success: false, message: "OTP token is required" });
+    }
+
+    // Verify the OTP token
+    const decoded = jwt.verify(otpToken, process.env.JWT_SECRET);
+    // Removed email validation as it is extracted from otpToken
+
+    res.status(200).json({ success: true, message: "OTP token verified successfully" });
+  } catch (error) {
+    console.error("[VERIFY RESET PASSWORD] Error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
