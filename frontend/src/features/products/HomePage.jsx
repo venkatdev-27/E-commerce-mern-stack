@@ -339,7 +339,7 @@ const HomePage = () => {
         {/* BEST SELLERS */}
         {homeData.bestSellers.length > 0 && (
           <section className="py-8 md:py-20 bg-slate-900 text-white relative overflow-hidden">
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
+            <div className="absolute inset-0 bg-slate-900/50" />
             <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
               <div className="flex justify-between items-end mb-6 md:mb-12">
                 <div>

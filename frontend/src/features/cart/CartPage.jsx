@@ -114,7 +114,7 @@ const CartPage = () => {
                                         </div>
                                         <div className="flex gap-2 items-center mb-4">
                                             <p className="text-sm text-gray-500 capitalize bg-gray-100 w-fit px-2 py-0.5 rounded text-xs font-semibold">
-                                                {item.category}
+                                                {item.category?.name || item.category}
                                             </p>
                                             {item.selectedSize && (
                                                 <p className="text-sm text-blue-600 bg-blue-50 w-fit px-2 py-0.5 rounded text-xs font-bold border border-blue-100">
