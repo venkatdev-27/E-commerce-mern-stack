@@ -1,4 +1,4 @@
-version: "3.9"
+
 
 services:
   backend:
@@ -15,7 +15,7 @@ services:
       args:
         VITE_API_URL: http://backend:5000
     ports:
-      - "4173:4173"
+      - "3000:80"
     depends_on:
       - backend
 
@@ -25,6 +25,6 @@ services:
       args:
         VITE_ADMIN_API_BASE_URL: http://backend:5000/api/admin
     ports:
-      - "5174:5173"
+      - "3001:80"
     depends_on:
       - backend

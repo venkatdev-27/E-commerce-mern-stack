@@ -3,40 +3,29 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
+  const isProduction = mode === "production";
 
   return {
     plugins: [react()],
 
-    server: {
-      host: "0.0.0.0",
-      port: 5173 || 5174,
-      hmr: false,
-      proxy: {
-        "/api": {
-          target: "http://localhost:5000",
-          changeOrigin: true,
-          secure: false,
-        },
-      },
-    },
+    // ✅ Dev server only (local)
+    server: !isProduction
+      ? {
+          host: "0.0.0.0",
+          port: 5173,
+          hmr: true,
+        }
+      : undefined,
 
-    // 🔥 REQUIRED FOR RENDER
-    preview: {
-      host: "0.0.0.0",
-      port: 5173,
-      allowedHosts: [
-        "luxemarket-admin.onrender.com" 
-      ],
-    },
+    // ❌ No preview needed (Nginx handles production)
 
-    define: {
-      "process.env": env,
-    },
+    // ✅ Only expose VITE_ variables automatically
+    // (Vite already does this, so no manual define needed)
 
     build: {
       outDir: "dist",
       emptyOutDir: true,
-      sourcemap: true,
+      sourcemap: false,
     },
   };
 });

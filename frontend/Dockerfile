@@ -1,9 +1,10 @@
-FROM node:20-alpine
+# -------- Build Stage --------
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 COPY . .
 
@@ -12,5 +13,16 @@ ENV VITE_API_URL=$VITE_API_URL
 
 RUN npm run build
 
-EXPOSE 4173
-CMD ["npm", "run", "preview"]
+
+# -------- Production Stage --------
+FROM nginx:alpine
+
+# 👉 Custom Nginx config for SPA
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# 👉 Copy built static files
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

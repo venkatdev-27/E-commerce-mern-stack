@@ -5,30 +5,24 @@ import react from "@vitejs/plugin-react";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const isProduction = mode === "production";
-  return {  
+
+  return {
     plugins: [react()],
 
-    server:!isProduction ? {
-      host: "0.0.0.0",
-      port: 5173,
-      hmr: !isProduction,  
-      
+    // ✅ Dev only
+    server: !isProduction
+      ? {
+          host: "0.0.0.0",
+          port: 5173,
+          hmr: true,
+        }
+      : undefined,
 
+    // ❌ No preview needed with Nginx
 
-    }
-    :undefined,
-
-    // 🔥 THIS IS THE IMPORTANT PART
-    preview: {
-      host: "0.0.0.0",
-      port: 4173,
-      allowedHosts: [
-        "luxemarket-ljoh.onrender.com"
-      ],
-    },
-
+    // ⚠️ Only expose PUBLIC env variables
     define: {
-      "process.env.GEMINI_API_KEY": JSON.stringify(env.GEMINI_API_KEY),
+      "process.env": {},
     },
 
     resolve: {
@@ -36,10 +30,9 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve(__dirname, "src"),
       },
     },
-    
 
     build: {
-      outDir: "build",
+      outDir: "dist",      // MUST match Dockerfile
       emptyOutDir: true,
     },
   };
