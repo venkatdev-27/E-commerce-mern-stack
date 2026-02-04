@@ -13,9 +13,11 @@ if (!BASE_URL) {
 
 const adminAxios = axios.create({
   baseURL: `${BASE_URL}/api/admin`,
- headers: {
-    "Content-Type": "application/json"
-  }
+  // ❌ Content-Type should NOT be forced to JSON, 
+  // otherwise FormData (multipart) fails to set safe boundary!
+  // headers: {
+  //   "Content-Type": "application/json" 
+  // }
 });
 
 /* ================================

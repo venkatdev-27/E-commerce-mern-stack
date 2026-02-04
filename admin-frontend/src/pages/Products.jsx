@@ -17,31 +17,34 @@ export default function Products() {
 
   // ✅ Helper to fix Image URLs
   const getImageUrl = (image) => {
-    if (!image) return "";
+  if (!image) return "";
 
-    // 1. Check for Base64 Data URI (Return as is)
-    // This prevents the "431 Request Header Fields Too Large" error
-    if (image.startsWith("data:")) {
-      return image;
-    }
+  // Base64 images
+  if (image.startsWith("data:")) {
+    return image;
+  }
 
-    // 2. Fix Windows Backslashes
-    let finalImage = image.replace(/\\/g, "/");
+  // Normalize Windows paths
+  let finalImage = image.replace(/\\/g, "/");
 
-    if (finalImage.startsWith("http://localhost:5174")) {
-      finalImage = finalImage.replace("5174", "5000"); // Legacy fix
-    } else if (finalImage.startsWith("http")) {
-      // already valid
-    } else {
-      // Ensure leading slash for relative paths
-      if (!finalImage.startsWith("/")) {
-        finalImage = "/" + finalImage;
-      }
-      finalImage = `\${import.meta.env.VITE_ADMIN_API_BASE_URL || "https://e-commerce-mern-stack-i66g.onrender.com"}\${finalImage}`;
-    }
-
+  // Absolute URLs
+  if (finalImage.startsWith("http")) {
     return finalImage;
-  };
+  }
+
+  // Ensure leading slash
+  if (!finalImage.startsWith("/")) {
+    finalImage = "/" + finalImage;
+  }
+
+  // ✅ CORRECT env usage (NO backslash)
+  const BASE_URL =
+    import.meta.env.VITE_ADMIN_API_BASE_URL ||
+    "https://e-commerce-mern-stack-i66g.onrender.com";
+
+  return `${BASE_URL}${finalImage}`;
+};
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);

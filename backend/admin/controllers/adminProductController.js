@@ -95,13 +95,13 @@ const createProduct = async (req, res) => {
 
     const productData = { ...req.body };
 
-    // 🔥 REMOVE INVALID IMAGE VALUE
-    // 🔥 REMOVE INVALID IMAGE VALUE
+    // 🔥 CLEANUP IMAGE FIELD (Robust)
+    // Remove if it's "null", "undefined", empty string, or an object (that isn't our desired string)
     if (
-      typeof productData.image === "object" || 
-      productData.image === "null" || 
+      !productData.image ||
+      productData.image === "null" ||
       productData.image === "undefined" ||
-      productData.image === ""
+      (typeof productData.image === "object" && !req.file)
     ) {
       delete productData.image;
     }
@@ -137,12 +137,13 @@ const updateProduct = async (req, res) => {
     const updateData = { ...req.body };
 
     // ❌ remove broken image object
-    // ❌ remove broken image object or invalid strings
+    // 🔥 CLEANUP IMAGE FIELD (Robust)
+    // Remove if it's "null", "undefined", empty string, or an object (that isn't our desired string)
     if (
-      typeof updateData.image === "object" || 
-      updateData.image === "null" || 
+      !updateData.image ||
+      updateData.image === "null" ||
       updateData.image === "undefined" ||
-      updateData.image === ""
+      (typeof updateData.image === "object" && !req.file)
     ) {
       delete updateData.image;
     }

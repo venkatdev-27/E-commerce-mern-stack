@@ -33,5 +33,6 @@ export const getImageUrl = (image) => {
   }
 
   // 5. Prepend Backend URL
-  return `https://e-commerce-mern-stack-i66g.onrender.com${finalImage}`;
+  const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  return `${BASE_URL}${finalImage}`;
 };
