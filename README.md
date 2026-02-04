@@ -2,7 +2,9 @@
 
 <div align="center">
 
-![LuxeMarket Banner](https://via.placeholder.com/1200x400?text=LuxeMarket+Premium+E-Commerce)
+<div align="center">
+  <img src="./assets/home.png" alt="LuxeMarket Homepage" />
+</div>
 
 **A Premium E-Commerce Experience built with the MERN Stack**
 
