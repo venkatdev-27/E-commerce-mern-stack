@@ -250,8 +250,8 @@ const Navbar = () => {
   return (
     <nav
       className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled
-          ? "bg-white/90 backdrop-blur-xl shadow-lg shadow-gray-200/50"
-          : "bg-white"
+        ? "bg-white/90 backdrop-blur-xl shadow-lg shadow-gray-200/50"
+        : "bg-white"
         }`}
     >
       <div
@@ -371,7 +371,7 @@ const Navbar = () => {
                                 {product.name}
                               </p>
                               <p className="text-xs text-gray-500 capitalize">
-                                {product.category}
+                                {product.category?.name || product.category || "General"}
                               </p>
                             </div>
                           </div>
@@ -620,7 +620,7 @@ const Navbar = () => {
                     <div>
                       <p className="font-bold text-gray-900">{product.name}</p>
                       <p className="text-xs text-gray-500 capitalize">
-                        {product.category}
+                        {product.category?.name || product.category || "General"}
                       </p>
                     </div>
                   </div>
