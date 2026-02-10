@@ -59,7 +59,7 @@ const ProductCard = memo(({ product }) => {
       <div className="relative aspect-[4/5] overflow-hidden bg-gray-100">
         {product?.image ? (
           <img
-            src={getImageUrl(product.image)}
+            src={getImageUrl(product.image?.url)}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             loading="lazy"

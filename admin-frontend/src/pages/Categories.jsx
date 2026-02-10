@@ -172,9 +172,9 @@ export default function Categories() {
                     <td style={{ padding: '15px', color: 'var(--text-primary)' }}>{category.name}</td>
                     <td style={{ padding: '15px', color: 'var(--text-primary)' }}>{category.description || '-'}</td>
                     <td style={{ padding: '15px', color: 'var(--text-primary)' }}>
-                      {category.image ? (
+                      {category.image?.url ? (
                         <img
-                          src={getImageUrl(category.image)}
+                          src={getImageUrl(category.image?.url)}
                           alt={category.name}
                           style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px' }}
                         />

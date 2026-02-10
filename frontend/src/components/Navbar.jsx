@@ -197,10 +197,10 @@ const Navbar = () => {
   ===================================================== */
   const getCategoryIcon = (category) => {
     // 1️⃣ DB image (MAIN CASE)
-    if (category.image) {
+    if (category.image?.url) {
       return (
         <img
-          src={getImageUrl(category.image)}
+          src={getImageUrl(category.image?.url)}
           alt={category.name}
           className="
           w-8 h-8 rounded-full object-cover
@@ -362,7 +362,7 @@ const Navbar = () => {
                             className="flex items-center gap-4 p-2 hover:bg-blue-50 rounded-xl cursor-pointer transition-colors group"
                           >
                             <img
-                              src={product.image}
+                              src={product.image?.url}
                               alt={product.name}
                               className="w-10 h-10 rounded-lg object-cover border border-gray-200"
                             />
@@ -613,7 +613,7 @@ const Navbar = () => {
                     className="flex items-center gap-4 p-2 border-b border-gray-50 pb-3 cursor-pointer hover:bg-gray-50 rounded-lg"
                   >
                     <img
-                      src={product.image}
+                      src={product.image?.url}
                       alt={product.name}
                       className="w-12 h-12 rounded-lg object-cover border"
                     />

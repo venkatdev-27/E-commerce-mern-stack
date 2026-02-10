@@ -16,34 +16,6 @@ export default function Products() {
   const [products, setProducts] = useState([]);
 
   // ✅ Helper to fix Image URLs
-  const getImageUrl = (image) => {
-  if (!image) return "";
-
-  // Base64 images
-  if (image.startsWith("data:")) {
-    return image;
-  }
-
-  // Normalize Windows paths
-  let finalImage = image.replace(/\\/g, "/");
-
-  // Absolute URLs
-  if (finalImage.startsWith("http")) {
-    return finalImage;
-  }
-
-  // Ensure leading slash
-  if (!finalImage.startsWith("/")) {
-    finalImage = "/" + finalImage;
-  }
-
-  // ✅ CORRECT env usage (NO backslash)
-  const BASE_URL =
-    import.meta.env.VITE_ADMIN_API_BASE_URL ||
-    "https://e-commerce-mern-stack-i66g.onrender.com";
-
-  return `${BASE_URL}${finalImage}`;
-};
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -241,14 +213,14 @@ export default function Products() {
               <tbody>
                 {products.map((product, index) => (
                   <tr key={product._id} style={{ borderTop: '1px solid var(--border-color)' }}>
-                    {console.log("Rendering Product:", product.name, "Image:", product.image)}
+                    {console.log("Rendering Product:", product.name, "Image:", product.image?.url)}
                     <td style={{ padding: '15px', color: 'var(--text-primary)', textAlign: 'center', fontWeight: '600' }}>
                       {(currentPage - 1) * 10 + index + 1}
                     </td>
                     <td style={{ padding: '15px', color: 'var(--text-primary)' }}>
-                      {product.image ? (
+                      {product.image?.url ? (
                         <img
-                          src={getImageUrl(product.image)}
+                          src={product.image.url}
                           alt={product.name}
                           style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px' }}
                         />

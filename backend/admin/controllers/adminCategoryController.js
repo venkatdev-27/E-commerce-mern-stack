@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Category = require("../../models/Category");
+const cloudinary = require("../../config/cloudinary"); // ✅ FIX 1
 const {
   convertArrayTimestampsToIST,
   convertTimestampsToIST,
@@ -62,14 +63,18 @@ const getCategory = async (req, res) => {
 };
 
 /* ================================
-   CREATE CATEGORY (MULTER)
+   CREATE CATEGORY (CLOUDINARY)
 ================================ */
 const createCategory = async (req, res) => {
   try {
-    const { name, slug, isActive, description, image } = req.body;
+    const { name, slug, description, isActive, image } = req.body;
 
-    if (!name || !name.trim()) {
+    if (!name?.trim()) {
       return res.status(400).json({ message: "Category name is required" });
+    }
+
+    if (!image) {
+      return res.status(400).json({ message: "Category image is required" });
     }
 
     const finalSlug =
@@ -80,19 +85,19 @@ const createCategory = async (req, res) => {
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
 
-    let imagePath = "";
-    if (req.file) {
-      imagePath = `/uploads/categories/${req.file.filename}`;
-    } else if (image?.trim()) {
-      imagePath = image.trim();
-    }
+    const upload = await cloudinary.uploader.upload(image, {
+      folder: "luxemarket/categories",
+    });
 
     const category = await Category.create({
       name: name.trim(),
       slug: finalSlug,
       description: description?.trim() || "",
-      image: imagePath,
       isActive: isActive !== undefined ? isActive === "true" : true,
+      image: {
+        url: upload.secure_url,
+        public_id: upload.public_id,
+      },
     });
 
     res.status(201).json(convertTimestampsToIST(category.toObject()));
@@ -105,7 +110,7 @@ const createCategory = async (req, res) => {
 };
 
 /* ================================
-   UPDATE CATEGORY (MULTER)
+   UPDATE CATEGORY (CLOUDINARY)
 ================================ */
 const updateCategory = async (req, res) => {
   try {
@@ -113,12 +118,16 @@ const updateCategory = async (req, res) => {
       return res.status(400).json({ message: "Invalid category ID" });
     }
 
-    const { name, slug, isActive, description } = req.body;
-    const updateData = {};
+    const category = await Category.findById(req.params.id);
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    const { name, slug, description, isActive, image } = req.body;
 
     if (name !== undefined) {
-      updateData.name = name.trim();
-      updateData.slug =
+      category.name = name.trim();
+      category.slug =
         slug?.trim() ||
         name
           .trim()
@@ -127,24 +136,26 @@ const updateCategory = async (req, res) => {
           .replace(/^-|-$/g, "");
     }
 
-    if (slug !== undefined) updateData.slug = slug.trim();
-    if (description !== undefined) updateData.description = description.trim();
-    if (isActive !== undefined) updateData.isActive = isActive === "true";
+    if (description !== undefined) category.description = description.trim();
+    if (isActive !== undefined) category.isActive = isActive === "true";
 
-    if (req.file) {
-      updateData.image = `/uploads/categories/${req.file.filename}`;
+    // 🔄 Replace image if provided
+    if (image) {
+      if (category.image?.public_id) {
+        await cloudinary.uploader.destroy(category.image.public_id);
+      }
+
+      const upload = await cloudinary.uploader.upload(image, {
+        folder: "luxemarket/categories",
+      });
+
+      category.image = {
+        url: upload.secure_url,
+        public_id: upload.public_id,
+      };
     }
 
-    const category = await Category.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true, runValidators: true }
-    );
-
-    if (!category) {
-      return res.status(404).json({ message: "Category not found" });
-    }
-
+    await category.save();
     res.json(convertTimestampsToIST(category.toObject()));
   } catch (error) {
     if (error.code === 11000) {
@@ -155,7 +166,7 @@ const updateCategory = async (req, res) => {
 };
 
 /* ================================
-   DELETE CATEGORY
+   DELETE CATEGORY (CLOUDINARY)
 ================================ */
 const deleteCategory = async (req, res) => {
   try {
@@ -163,10 +174,16 @@ const deleteCategory = async (req, res) => {
       return res.status(400).json({ message: "Invalid category ID" });
     }
 
-    const category = await Category.findByIdAndDelete(req.params.id);
+    const category = await Category.findById(req.params.id);
     if (!category) {
       return res.status(404).json({ message: "Category not found" });
     }
+
+    if (category.image?.public_id) {
+      await cloudinary.uploader.destroy(category.image.public_id);
+    }
+
+    await category.deleteOne();
 
     res.json({ message: "Category deleted successfully" });
   } catch (error) {

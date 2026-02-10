@@ -93,6 +93,8 @@ const getProducts = async (req, res) => {
     else if (sortBy === "price-high-low") sortOptions = { price: -1 };
     else if (sortBy === "rating") sortOptions = { rating: -1 };
 
+
+
     /* ---------- PAGINATION ---------- */
     const pageInt = Math.max(1, Number(page));
     const limitInt = Math.min(100, Math.max(1, Number(limit)));
@@ -100,9 +102,9 @@ const getProducts = async (req, res) => {
 
 const products = await Product.find(query)
   .populate("category", "name slug") // ✅ ADD THIS
-  .sort({ _id: -1 })
-  .limit(limit)
-  .skip((page - 1) * limit)
+  .sort(sortOptions)
+  .limit(limitInt)
+  .skip(skip)
   .lean();
 
 

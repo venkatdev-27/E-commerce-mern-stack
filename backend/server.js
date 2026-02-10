@@ -42,7 +42,6 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 /* =========================
    STATIC FILES
 ========================= */
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 /* =========================
    ROUTES (REGISTER AFTER DB)

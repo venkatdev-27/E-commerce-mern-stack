@@ -258,7 +258,7 @@ const getDashboardStats = async (req, res) => {
           _id: 0,
           productId: "$_id",
           name: "$product.name",
-          image: "$product.image",
+          image: { $ifNull: ["$product.image.url", null] },
           category: { $ifNull: ["$categoryInfo.name", "Uncategorized"] },
           totalSold: 1,
           totalRevenue: 1

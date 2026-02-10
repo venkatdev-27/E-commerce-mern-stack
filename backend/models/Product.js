@@ -17,7 +17,10 @@ const productSchema = new mongoose.Schema(
     color: { type: String, trim: true },
     sizes: [String],
 
-    image: { type: String, required: true, trim: true },
+    image: {
+      url: { type: String, required: true, trim: true },
+      public_id: { type: String, required: true },
+    },
 
     rating: { type: Number, default: 4, min: 0, max: 5 },
     reviews: { type: Number, default: 0, min: 0 },

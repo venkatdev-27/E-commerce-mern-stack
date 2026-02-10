@@ -76,7 +76,7 @@ const placeOrder = async (req, res) => {
   orderItems.push({
     product: product._id,
     title: product.name,
-    image: product.image,
+    image: product.image?.url,
     quantity: item.quantity,
     price,
     orderName: product.name,

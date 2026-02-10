@@ -17,10 +17,15 @@ const categorySchema = new mongoose.Schema(
       trim: true,
     },
 
-    image: {
-      type: String,
-      trim: true,
-      default: "",
+        image: {
+      url: {
+        type: String,
+        required: true,
+      },
+      public_id: {
+        type: String,
+        required: true,
+      },
     },
 
     description: {

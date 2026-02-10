@@ -112,7 +112,7 @@ const ProductDetailsPage = () => {
         {/* IMAGE */}
         <div>
           <img
-            src={getImageUrl(product.image) || "/placeholder.png"}
+            src={getImageUrl(product.image?.url) || "/placeholder.png"}
             alt={product.name}
             className="w-full rounded-xl"
           />

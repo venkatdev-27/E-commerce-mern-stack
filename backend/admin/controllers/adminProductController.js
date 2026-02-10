@@ -88,38 +88,29 @@ const getProduct = async (req, res) => {
 ================================ */
 const createProduct = async (req, res) => {
   try {
-    console.log("🔥 createProduct HIT");
-    console.log("BODY:", req.body);
-    console.log("FILE:", req.file);
-    console.log("Image type:", typeof req.body.image);
+    const { image, ...rest } = req.body;
 
-    const productData = { ...req.body };
-
-    // 🔥 CLEANUP IMAGE FIELD (Robust)
-    // Remove if it's "null", "undefined", empty string, or an object (that isn't our desired string)
-    if (
-      !productData.image ||
-      productData.image === "null" ||
-      productData.image === "undefined" ||
-      (typeof productData.image === "object" && !req.file)
-    ) {
-      delete productData.image;
+    if (!image) {
+      return res.status(400).json({ message: "Image is required" });
     }
 
-    // ✅ FILE UPLOAD (multer)
-    if (req.file) {
-      productData.image = `/uploads/products/${req.file.filename}`;
-    }
+    // ✅ Upload SAME image to Cloudinary (no optimization)
+    const upload = await cloudinary.uploader.upload(image, {
+      folder: "luxemarket/products",
+      transformation: [],
+    });
 
-    // 🔢 custom numeric id (your logic)
-    const lastProduct = await Product.findOne().sort({ id: -1 });
-    productData.id = lastProduct ? String(Number(lastProduct.id) + 1) : "1";
-
-    const product = await Product.create(productData);
+    const product = await Product.create({
+      ...rest,
+      image: {
+        url: upload.secure_url,
+        public_id: upload.public_id,
+      },
+    });
 
     res.status(201).json(product);
   } catch (error) {
-    console.error("❌ Create product error:", error);
+    console.error("Create product error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -129,39 +120,32 @@ const createProduct = async (req, res) => {
 ================================ */
 const updateProduct = async (req, res) => {
   try {
-    console.log("🔥 updateProduct HIT");
-    console.log("BODY:", req.body);
-    console.log("FILE:", req.file);
-    console.log("Image type:", typeof req.body.image);
-
-    const updateData = { ...req.body };
-
-    // ❌ remove broken image object
-    // 🔥 CLEANUP IMAGE FIELD (Robust)
-    // Remove if it's "null", "undefined", empty string, or an object (that isn't our desired string)
-    if (
-      !updateData.image ||
-      updateData.image === "null" ||
-      updateData.image === "undefined" ||
-      (typeof updateData.image === "object" && !req.file)
-    ) {
-      delete updateData.image;
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
     }
 
-    // ✅ new uploaded file
-    if (req.file) {
-      updateData.image = `/uploads/products/${req.file.filename}`;
+    // 🔄 If new image sent → replace in Cloudinary
+    if (req.body.image) {
+      await cloudinary.uploader.destroy(product.image.public_id);
+
+      const upload = await cloudinary.uploader.upload(req.body.image, {
+        folder: "luxemarket/products",
+        transformation: [],
+      });
+
+      product.image = {
+        url: upload.secure_url,
+        public_id: upload.public_id,
+      };
     }
 
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true, runValidators: true }
-    );
+    Object.assign(product, req.body);
+    await product.save();
 
     res.json(product);
   } catch (error) {
-    console.error("❌ Update product error:", error);
+    console.error("Update product error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -172,20 +156,22 @@ const updateProduct = async (req, res) => {
 ================================ */
 const deleteProduct = async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: "Invalid product ID" });
-    }
-
-    const product = await Product.findByIdAndDelete(req.params.id);
+    const product = await Product.findById(req.params.id);
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
+
+    // 🗑 Delete image from Cloudinary
+    await cloudinary.uploader.destroy(product.image.public_id);
+
+    await product.deleteOne();
 
     res.json({ message: "Product deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 module.exports = {
   getAllProducts,
