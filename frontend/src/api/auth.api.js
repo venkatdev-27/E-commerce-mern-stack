@@ -1,3 +1,5 @@
+import axiosInstance from "./axiosInstance";
+
 // PASSWORD LOGIN
 export const login = async (credentials) => {
   return await axiosInstance.post("/auth/login", credentials);
