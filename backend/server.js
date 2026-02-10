@@ -10,6 +10,9 @@ const { generalLimiter } = require("./middleware/rateLimiter");
 
 const app = express();
 
+// ✅ Enable proxy trust for Render/Heroku (fixes rate limit IP issues)
+app.set("trust proxy", 1);
+
 /* =========================
    CORS
 ========================= */
@@ -17,6 +20,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
   "https://luxemarket-ljoh.onrender.com",
+  "https://e-commerce-mern-stack-i66g.onrender.com", // ✅ Added correct deployment URL
 ];
 
 app.use(
