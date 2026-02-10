@@ -9,4 +9,6 @@ router.use(apiLimiter);
 /* ================================
    GET ALL CATEGORIES (USER)
 ================================ */
+router.get("/", getCategories);
+
 module.exports = router;
