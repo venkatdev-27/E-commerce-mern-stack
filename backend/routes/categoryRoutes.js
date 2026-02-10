@@ -1,15 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const { apiLimiter } = require("../middleware/rateLimiter");
-const { getCategories } = require("../controllers/categoryController");
-
-// Apply rate limiter to all category routes
-router.use(apiLimiter);
+const {
+  getActiveCategories,
+} = require("../admin/controllers/adminCategoryController");
 
 /* ================================
    GET ALL CATEGORIES (USER)
 ================================ */
-router.get("/", getCategories);
+router.get("/", getActiveCategories);
 
 module.exports = router;
 

@@ -98,8 +98,9 @@ const ShopPage = () => {
     const loadCategories = async () => {
       try {
         const res = await getCategories();
-        // Extract categories array from response: { success: true, categories: [...] }
-        setCategories(res?.categories || []);
+        // Backend now returns array directly or { success, categories }
+        const categoriesData = Array.isArray(res) ? res : res?.categories || [];
+        setCategories(categoriesData);
       } catch (err) {
         console.error("Failed to load categories", err);
       }

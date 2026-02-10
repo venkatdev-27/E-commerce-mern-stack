@@ -79,7 +79,8 @@ const HomePage = () => {
     const fetchCategories = async () => {
       try {
         const res = await getCategories();
-        setCategories(res?.categories || []);
+        const categoriesData = Array.isArray(res) ? res : res?.categories || [];
+        setCategories(categoriesData);
       } catch (error) {
         console.error("Failed to fetch categories:", error);
       }
