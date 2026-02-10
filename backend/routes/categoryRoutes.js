@@ -12,3 +12,4 @@ router.use(apiLimiter);
 router.get("/", getCategories);
 
 module.exports = router;
+
