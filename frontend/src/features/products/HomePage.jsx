@@ -3,8 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Truck, Shield, Clock, RotateCcw, Zap, TrendingUp } from 'lucide-react';
 import ProductCard from '@/components/ProductCard.jsx';
 import HomeSkeleton from '@/components/skeletons/HomeSkeleton.jsx';
-import { getHomePageData } from '@/api';
-import { CATEGORIES } from '@/constants/categories';
+import { getHomePageData, getCategories } from '@/api';
 import { useToast } from '@/context/ToastContext';
 import Countdown from 'react-countdown';
 
@@ -61,6 +60,9 @@ const HomePage = () => {
     justForYou: []
   });
 
+  // Categories from API
+  const [categories, setCategories] = useState([]);
+
   // Timer State
   const [targetDate, setTargetDate] = useState(Date.now() + 4000);
 
@@ -70,6 +72,19 @@ const HomePage = () => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 5000);
     return () => clearInterval(timer);
+  }, []);
+
+  // Fetch Categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await getCategories();
+        setCategories(res?.categories || []);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    };
+    fetchCategories();
   }, []);
 
   // Fetch Data Logic
@@ -142,10 +157,7 @@ const HomePage = () => {
     </div>
   );
 
-  const categoriesToShow = useMemo(
-    () => CATEGORIES.filter((cat) => cat.id !== "home"),
-    []
-  );
+
 
   if (loading) return <HomeSkeleton />;
 
@@ -271,10 +283,10 @@ const HomePage = () => {
               Shop by Category
             </h2>
             <div className="flex overflow-x-auto pb-4 gap-4 md:gap-8 no-scrollbar snap-x px-2 md:px-0 md:flex-wrap md:justify-center">
-              {categoriesToShow.map(cat =>
-                <Link key={cat.id} to={`/shop?category=${cat.slug || cat.id}`} className="group flex flex-col items-center gap-2 md:gap-3 min-w-[70px] md:w-32 snap-center">
+              {categories.map(cat =>
+                <Link key={cat._id} to={`/shop?category=${cat.slug}`} className="group flex flex-col items-center gap-2 md:gap-3 min-w-[70px] md:w-32 snap-center">
                   <div className="w-16 h-16 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-blue-50 to-indigo-100 p-1 md:p-1.5 shadow-sm group-hover:shadow-lg border-2 border-transparent group-hover:border-indigo-400 relative overflow-hidden transition-all duration-300">
-                    <img src={`https://picsum.photos/seed/${cat.name}/200`} alt={cat.name} className="w-full h-full object-cover rounded-full grayscale group-hover:grayscale-0 transition-all duration-300" />
+                    <img src={cat.image?.url || `https://picsum.photos/seed/${cat.name}/200`} alt={cat.name} className="w-full h-full object-cover rounded-full grayscale group-hover:grayscale-0 transition-all duration-300" />
                   </div>
                   <span className="font-bold text-gray-600 group-hover:text-indigo-600 text-[10px] md:text-sm text-center uppercase tracking-wide transition-colors duration-300">
                     {cat.name.split(" ")[0]}
