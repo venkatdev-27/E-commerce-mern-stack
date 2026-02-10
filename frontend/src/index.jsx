@@ -5,8 +5,8 @@ import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router-dom";
 
 import { store } from "@/store/store";
-import App from "@/App.jsx";
 import { ToastProvider } from "@/context/ToastContext.jsx";
+import MainApp from "../MainApp";
 
 const rootElement = document.getElementById("root");
 
@@ -19,7 +19,7 @@ ReactDOM.createRoot(rootElement).render(
     <Provider store={store}>
       <BrowserRouter>
         <ToastProvider>
-          <App />
+          <MainApp />
         </ToastProvider>
       </BrowserRouter>
     </Provider>
