@@ -29,6 +29,23 @@ import Beauty from "@/pages/Beauty.jsx";
 import Sports from "@/pages/Sports.jsx";
 import Accessories from "@/pages/Accessories.jsx";
 import ProtectedRoute from "@/components/ProtectedRoute.jsx";
+import GlobalLoader from "@/components/GlobalLoader.jsx";
+
+const API_URL=import.meta.env.VITE_API_URL;
+
+function App() {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API_URL}/health`)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <GlobalLoader />;
+
+  return <MainApp />;
+}
+
 
 
 // Scroll to top on route change
