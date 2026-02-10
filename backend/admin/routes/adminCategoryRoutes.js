@@ -11,7 +11,7 @@ const {
 } = require("../controllers/adminCategoryController");
 
 const requireAdminAuth = require("../middleware/adminAuthMiddleware");
-const upload = require("../../config/multer"); // ✅ USE EXISTING MULTER
+
 
 /* =========================
    ADMIN AUTH
@@ -35,33 +35,16 @@ const validateObjectId = (req, res, next) => {
 // 📦 Get all categories
 router.get("/", getAllCategories);
 
-// ➕ Create category (image upload)
-router.post(
-  "/",
-  upload.single("image"),
-  createCategory
-);
+// ➕ Create category (Cloudinary – base64 image)
+router.post("/", createCategory);
 
 // 📄 Get single category
-router.get(
-  "/:id",
-  validateObjectId,
-  getCategory
-);
+router.get("/:id", validateObjectId, getCategory);
 
-// ✏️ Update category (image optional)
-router.put(
-  "/:id",
-  validateObjectId,
-  upload.single("image"),
-  updateCategory
-);
+// ✏️ Update category (Cloudinary – base64 image)
+router.put("/:id", validateObjectId, updateCategory);
 
 // ❌ Delete category
-router.delete(
-  "/:id",
-  validateObjectId,
-  deleteCategory
-);
+router.delete("/:id", validateObjectId, deleteCategory);
 
 module.exports = router;

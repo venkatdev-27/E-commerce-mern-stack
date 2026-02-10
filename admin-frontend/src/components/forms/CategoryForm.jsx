@@ -21,30 +21,34 @@ export default function CategoryForm({
   useEffect(() => {
     reset(initialData);
   }, [initialData, reset]);
+  
+    const handleImageFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setValue("image", reader.result); // base64 string
+    };
+    reader.readAsDataURL(file);
+  };
+
+  /* ================================
+     SUBMIT
+  ================================ */
   const handleFormSubmit = (data) => {
-    const formData = new FormData();
-
-    // REQUIRED FIELD
-    formData.append("name", data.name.trim());
-
-    // OPTIONAL TEXT FIELD
-    if (data.description && data.description.trim() !== "") {
-      formData.append("description", data.description.trim());
+    if (!data.image) {
+      alert("Category image is required");
+      return;
     }
 
-    /**
-     * IMAGE HANDLING (MATCHES MULTER)
-     * Priority:
-     * 1️⃣ Uploaded file → req.file
-     * 2️⃣ Image URL → req.body.image
-     */
-    if (data.imageFile && data.imageFile.length > 0) {
-      formData.append("image", data.imageFile[0]); // ✅ multer key
-    } else if (typeof data.image === "string" && data.image.trim() !== "") {
-      formData.append("image", data.image.trim());
-    }
+    const payload = {
+      name: data.name.trim(),
+      description: data.description?.trim() || "",
+      image: data.image, // ✅ base64 OR URL
+    };
 
-    onSubmit(formData);
+    onSubmit(payload);
   };
 
   return (
@@ -122,7 +126,18 @@ export default function CategoryForm({
           <input
             type="file"
             accept=".jpg,.jpeg,.png"
-            {...register("imageFile")}
+                  onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          // ✅ store base64 in `image`
+          setValue("image", reader.result);
+        };
+        reader.readAsDataURL(file);
+      }}
+
             style={{
               padding: "6px",
               background: "var(--bg-secondary)",
@@ -178,10 +193,12 @@ export default function CategoryForm({
         </div>
 
         {/* IMAGE URL */}
-        <input
-          type="text"
-          placeholder="https://example.com/category-image.jpg"
-          {...register("image")}
+         <input
+    type="text"
+    placeholder="https://example.com/category-image.jpg"
+    {...register("image", {
+      required: "Category image is required",
+    })}
           style={{
             padding: "8px 12px",
             background: "var(--bg-secondary)",

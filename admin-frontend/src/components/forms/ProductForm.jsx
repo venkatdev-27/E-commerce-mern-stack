@@ -23,48 +23,33 @@ export default function ProductForm({
   /* ================================
      RESET FORM ON EDIT MODE CHANGE
   ================================ */
-  useEffect(() => {
+    useEffect(() => {
     reset({
       ...initialData,
-      category: initialData.category?._id || initialData.category || "", // ✅ Handle populated category
-      image: typeof initialData.image === "string" ? initialData.image : ""
+      category: initialData.category?._id || initialData.category || "",
+      image: initialData.image?.url || initialData.image || ""
     });
   }, [initialData, reset]);
 
-  const handleFormSubmit = (data) => {
-    const formData = new FormData();
-
-    const {
-      imageFile, // 👈 destructure & remove
-      ...safeData
-    } = data;
-
-    // ✅ VALIDATION: Image is required
-    const hasImageFile = imageFile && imageFile.length > 0;
-    const hasImageUrl = typeof safeData.image === "string" && safeData.image.trim() !== "";
-
-    if (!hasImageFile && !hasImageUrl) {
-      alert("Please upload an image or provide an image URL.");
+    const handleFormSubmit = (data) => {
+    if (!data.image || !data.image.trim()) {
+      alert("Product image is required");
       return;
     }
 
-    formData.append("name", safeData.name.trim());
-    formData.append("category", safeData.category);
-    formData.append("price", Number(safeData.price));
-    formData.append("reviews", Number(safeData.reviews || 0));
+    // ✅ VALIDATION: Image is required
+        const payload = {
+      name: data.name.trim(),
+      description: data.description?.trim() || "",
+      category: data.category,
+      price: Number(data.price),
+      reviews: Number(data.reviews || 0),
+      image: data.image.trim() // ✅ Cloudinary input
+    };
 
-    if (safeData.description?.trim()) {
-      formData.append("description", safeData.description.trim());
-    }
-
-    if (imageFile?.length) {
-      formData.append("image", imageFile[0]);
-    } else if (typeof safeData.image === "string" && safeData.image.trim()) {
-      formData.append("image", safeData.image.trim());
-    }
-
-    onSubmit(formData);
+    onSubmit(payload);
   };
+
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -171,81 +156,16 @@ export default function ProductForm({
         {/* =========================
     PRODUCT IMAGE
 ========================= */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ color: 'var(--text-primary)', fontWeight: '600', fontSize: '14px' }}>
-            Product Image
-          </label>
-
-          {/* File Upload */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <input
-              type="file"
-              accept=".jpg,.jpeg,.png"
-              {...register("imageFile")}
-              style={{
-                padding: '8px',
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '6px',
-                color: 'var(--text-primary)',
-                fontSize: '14px',
-                cursor: 'pointer'
-              }}
-            />
-            <small style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>
-              Upload JPG or PNG file (recommended)
-            </small>
-          </div>
-
-          {/* OR Separator */}
-          <div
-            style={{
-              textAlign: 'center',
-              color: 'var(--text-secondary)',
-              fontSize: '12px',
-              margin: '8px 0',
-              position: 'relative'
-            }}
-          >
-            <span
-              style={{
-                background: 'var(--bg-main)',
-                padding: '0 8px',
-                position: 'relative',
-                zIndex: 1
-              }}
-            >
-              OR
-            </span>
-            <div
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: 0,
-                right: 0,
-                height: '1px',
-                background: 'var(--border-color)',
-                zIndex: 0
-              }}
-            />
-          </div>
-
-          {/* Image URL */}
+                {/* IMAGE URL / BASE64 */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+          <label>Product Image *</label>
           <input
-            type="text"
-            placeholder="https://example.com/image.jpg"
-            {...register("image")}
-            style={{
-              padding: '10px 12px',
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '6px',
-              color: 'var(--text-primary)',
-              fontSize: '14px'
-            }}
+            {...register("image", { required: true })}
+            placeholder="Paste image URL or base64"
+            style={inputStyle}
           />
-          <small style={{ color: 'var(--text-secondary)', fontSize: '12px' }}>
-            Alternative: Provide image URL
+          <small style={{ color: "var(--text-secondary)", fontSize: 12 }}>
+            Cloudinary supports URL or base64 (data:image/...)
           </small>
         </div>
       </div>

@@ -27,11 +27,6 @@ export default function Products() {
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [saving, setSaving] = useState(false);
-  const [filters, setFilters] = useState({
-    search: "",
-    category: "",
-    page: 1
-  });
 
   /* ================================
      FETCH PRODUCTS
@@ -213,14 +208,13 @@ export default function Products() {
               <tbody>
                 {products.map((product, index) => (
                   <tr key={product._id} style={{ borderTop: '1px solid var(--border-color)' }}>
-                    {console.log("Rendering Product:", product.name, "Image:", product.image?.url)}
-                    <td style={{ padding: '15px', color: 'var(--text-primary)', textAlign: 'center', fontWeight: '600' }}>
+                                      <td style={{ padding: '15px', color: 'var(--text-primary)', textAlign: 'center', fontWeight: '600' }}>
                       {(currentPage - 1) * 10 + index + 1}
                     </td>
                     <td style={{ padding: '15px', color: 'var(--text-primary)' }}>
                       {product.image?.url ? (
                         <img
-                          src={product.image.url}
+                          src={product.image?.url}
                           alt={product.name}
                           style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px' }}
                         />

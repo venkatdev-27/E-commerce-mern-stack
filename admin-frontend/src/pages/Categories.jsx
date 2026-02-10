@@ -10,31 +10,8 @@ export default function Categories() {
   const [categories, setCategories] = useState([]);
 
   // ✅ Helper to fix Image URLs
-  const getImageUrl = (image) => {
-    if (!image) return "";
-
-    // 1. Check for Base64 Data URI (Return as is)
-    if (image.startsWith("data:")) {
-      return image;
-    }
-
-    // 2. Fix Windows Backslashes
-    let finalImage = image.replace(/\\/g, "/");
-
-    if (finalImage.startsWith("http://localhost:5174")) {
-      finalImage = finalImage.replace("5174", "5000"); // Fix bad data
-    }
-    if (finalImage.startsWith("http")) {
-      return finalImage; // Already valid absolute URL
-    }
-    // Ensure leading slash for relative paths
-    if (!finalImage.startsWith("/")) {
-      finalImage = "/" + finalImage;
-    }
-    // 5. Prepend Backend URL (Dynamic)
-    const BASE_URL = import.meta.env.VITE_ADMIN_API_BASE_URL || "http://localhost:5000";
-    return `${BASE_URL}${finalImage}`;
-  };
+  
+    
   const [loading, setLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -172,15 +149,15 @@ export default function Categories() {
                     <td style={{ padding: '15px', color: 'var(--text-primary)' }}>{category.name}</td>
                     <td style={{ padding: '15px', color: 'var(--text-primary)' }}>{category.description || '-'}</td>
                     <td style={{ padding: '15px', color: 'var(--text-primary)' }}>
-                      {category.image?.url ? (
-                        <img
-                          src={getImageUrl(category.image?.url)}
-                          alt={category.name}
-                          style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px' }}
-                        />
-                      ) : (
-                        'No image'
-                      )}
+                     {category.image?.url ? (
+                              <img
+                                src={category.image?.url}
+                                alt={category.name}
+                                style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px' }}
+                              />
+                            ) : (
+                              'No image'
+                            )}
                     </td>
                     <td style={{ padding: '15px', textAlign: 'center' }}>
                       <button
