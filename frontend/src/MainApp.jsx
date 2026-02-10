@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import GlobalLoader from "@/components/GlobalLoader.jsx";
-import App from "./App";
+import App from "@/App.jsx";
+
 
 const API_URL = import.meta.env.VITE_API_URL;
 

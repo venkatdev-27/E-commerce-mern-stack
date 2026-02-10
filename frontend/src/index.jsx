@@ -6,7 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 
 import { store } from "@/store/store";
 import { ToastProvider } from "@/context/ToastContext.jsx";
-import MainApp from "../MainApp";
+import MainApp from "@/MainApp.jsx";
 
 const rootElement = document.getElementById("root");
 
