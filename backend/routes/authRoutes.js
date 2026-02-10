@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { authLimiter } = require("../middleware/rateLimiter");
 
 const {
   signup,
@@ -16,17 +17,17 @@ const {
 const requireAuth = require("../middleware/auth");
 
 /* ================= PUBLIC ROUTES ================= */
-router.post("/signup", signup);
-router.post("/login", login);
+router.post("/signup", authLimiter, signup);
+router.post("/login", authLimiter, login);
 
 // OTP login
-router.post("/send-otp", sendOTP);
-router.post("/verify-otp", verifyOTP);
+router.post("/send-otp", authLimiter, sendOTP);
+router.post("/verify-otp", authLimiter, verifyOTP);
 
 // Forgot password (NO AUTH)
-router.post("/forgot-password", forgotPassword);
-router.post("/verify-reset-otp", verifyResetOTP);
-router.post("/reset-password", resetPassword);
+router.post("/forgot-password", authLimiter, forgotPassword);
+router.post("/verify-reset-otp", authLimiter, verifyResetOTP);
+router.post("/reset-password", authLimiter, resetPassword);
 router.post("/verify-reset-password", verifyResetPassword);
 
 /* ================= PROTECTED ROUTES ================= */

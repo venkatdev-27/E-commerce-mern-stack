@@ -1,6 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const router = express.Router();
+const { apiLimiter } = require("../middleware/rateLimiter");
+
+// Apply rate limiter to all order routes
+router.use(apiLimiter);
 const requireAuth = require("../middleware/auth");
 const {
   placeOrder,

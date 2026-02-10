@@ -6,8 +6,12 @@ const {
   sendSupportReply,
 } = require("../../controllers/supportController");
 const requireAdminAuth = require("../middleware/adminAuthMiddleware");
+const { adminLimiter } = require("../../middleware/rateLimiter");
 
 const router = express.Router();
+
+// Apply rate limiter
+router.use(adminLimiter);
 
 // All admin routes require authentication
 router.use(requireAdminAuth);

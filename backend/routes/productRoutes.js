@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { apiLimiter } = require("../middleware/rateLimiter");
 
 const {
   getProducts,
@@ -7,6 +8,9 @@ const {
   getProductById,
   getBrands,
 } = require("../controllers/productController");
+
+// Apply rate limiter to all product routes
+router.use(apiLimiter);
 
 /* =========================
    🔍 REAL SEARCH (MUST BE FIRST)

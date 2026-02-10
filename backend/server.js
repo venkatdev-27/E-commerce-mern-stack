@@ -1,10 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 const compression = require("compression");
+const helmet = require("helmet");
 const path = require("path");
 require("dotenv").config();
 
 const connectDB = require("./config/db");
+const { generalLimiter } = require("./middleware/rateLimiter");
 
 const app = express();
 
@@ -30,7 +32,17 @@ app.use(
   })
 );
 
+/* =========================
+   SECURITY & OPTIMIZATION
+========================= */
+// Security headers
+app.use(helmet());
+
+// Gzip compression
 app.use(compression());
+
+// General rate limiting (applied to all routes)
+app.use(generalLimiter);
 
 /* =========================
    BODY PARSER

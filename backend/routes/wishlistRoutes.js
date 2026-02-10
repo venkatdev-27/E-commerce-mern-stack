@@ -1,5 +1,9 @@
 const express = require("express");
 const router = express.Router();
+const { apiLimiter } = require("../middleware/rateLimiter");
+
+// Apply rate limiter
+router.use(apiLimiter);
 const requireAuth = require("../middleware/auth");
 const {
   getWishlist,

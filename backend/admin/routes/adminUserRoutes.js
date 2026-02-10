@@ -1,8 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const { adminLimiter } = require('../../middleware/rateLimiter');
 const User = require('../../models/User');
 const Order = require('../../models/Order');
 const adminAuth = require('../../admin/middleware/adminAuthMiddleware');
+
+// Apply rate limiter
+router.use(adminLimiter);
 
 /**
  * @route   GET /api/admin/users

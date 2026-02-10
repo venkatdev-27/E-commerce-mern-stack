@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { adminLimiter } = require("../../middleware/rateLimiter");
 
 const {
   registerAdmin,
@@ -8,6 +9,9 @@ const {
 } = require("../controllers/adminAuthController");
 
 const requireAdminAuth = require("../middleware/adminAuthMiddleware");
+
+// Apply rate limiter to all admin routes
+router.use(adminLimiter);
 
 /* =========================
    ADMIN AUTH ROUTES
