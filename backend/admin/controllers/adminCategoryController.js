@@ -1,10 +1,17 @@
 const mongoose = require("mongoose");
 const Category = require("../../models/Category");
-const cloudinary = require("../../config/cloudinary"); // ✅ FIX 1
+const cloudinary = require("cloudinary").v2;
 const {
   convertArrayTimestampsToIST,
   convertTimestampsToIST,
 } = require("../../utils/dateUtils");
+
+// Configure cloudinary directly in the controller
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 /* ================================
    GET ALL CATEGORIES (ADMIN)
@@ -105,7 +112,10 @@ const createCategory = async (req, res) => {
     if (error.code === 11000) {
       return res.status(400).json({ message: "Category already exists" });
     }
-    res.status(500).json({ message: error.message });
+    if (error.message && error.message.includes("Cloudinary")) {
+      return res.status(500).json({ message: "Failed to upload image to Cloudinary" });
+    }
+    res.status(500).json({ message: error.message || "Failed to create category" });
   }
 };
 
@@ -140,19 +150,24 @@ const updateCategory = async (req, res) => {
     if (isActive !== undefined) category.isActive = isActive === "true";
 
     // 🔄 Replace image if provided
-    if (image) {
-      if (category.image?.public_id) {
-        await cloudinary.uploader.destroy(category.image.public_id);
+    if (image && image !== category.image?.url) {
+      try {
+        if (category.image?.public_id) {
+          await cloudinary.uploader.destroy(category.image.public_id);
+        }
+
+        const upload = await cloudinary.uploader.upload(image, {
+          folder: "luxemarket/categories",
+        });
+
+        category.image = {
+          url: upload.secure_url,
+          public_id: upload.public_id,
+        };
+      } catch (cloudinaryError) {
+        console.error("Cloudinary upload error:", cloudinaryError);
+        return res.status(500).json({ message: "Failed to upload image to Cloudinary" });
       }
-
-      const upload = await cloudinary.uploader.upload(image, {
-        folder: "luxemarket/categories",
-      });
-
-      category.image = {
-        url: upload.secure_url,
-        public_id: upload.public_id,
-      };
     }
 
     await category.save();
@@ -179,15 +194,22 @@ const deleteCategory = async (req, res) => {
       return res.status(404).json({ message: "Category not found" });
     }
 
+    // 🗑 Delete image from Cloudinary
     if (category.image?.public_id) {
-      await cloudinary.uploader.destroy(category.image.public_id);
+      try {
+        await cloudinary.uploader.destroy(category.image.public_id);
+      } catch (cloudinaryError) {
+        console.error("Cloudinary delete error:", cloudinaryError);
+        // Continue with deletion even if image deletion fails
+      }
     }
 
     await category.deleteOne();
 
     res.json({ message: "Category deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Delete category error:", error);
+    res.status(500).json({ message: error.message || "Failed to delete category" });
   }
 };
 

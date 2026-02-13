@@ -1,9 +1,17 @@
 const mongoose = require("mongoose");
 const Product = require("../../models/Product");
+const cloudinary = require("cloudinary").v2;
 const {
   convertArrayTimestampsToIST,
   convertTimestampsToIST
 } = require("../../utils/dateUtils");
+
+// Configure cloudinary directly in the controller
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 /* ================================
    GET ALL PRODUCTS (ADMIN)
@@ -111,7 +119,10 @@ const createProduct = async (req, res) => {
     res.status(201).json(product);
   } catch (error) {
     console.error("Create product error:", error);
-    res.status(500).json({ message: error.message });
+    if (error.message && error.message.includes("Cloudinary")) {
+      return res.status(500).json({ message: "Failed to upload image to Cloudinary" });
+    }
+    res.status(500).json({ message: error.message || "Failed to create product" });
   }
 };
 
@@ -126,18 +137,25 @@ const updateProduct = async (req, res) => {
     }
 
     // 🔄 If new image sent → replace in Cloudinary
-    if (req.body.image) {
-      await cloudinary.uploader.destroy(product.image.public_id);
+    if (req.body.image && req.body.image !== product.image?.url) {
+      try {
+        if (product.image?.public_id) {
+          await cloudinary.uploader.destroy(product.image.public_id);
+        }
 
-      const upload = await cloudinary.uploader.upload(req.body.image, {
-        folder: "luxemarket/products",
-        transformation: [],
-      });
+        const upload = await cloudinary.uploader.upload(req.body.image, {
+          folder: "luxemarket/products",
+          transformation: [],
+        });
 
-      product.image = {
-        url: upload.secure_url,
-        public_id: upload.public_id,
-      };
+        product.image = {
+          url: upload.secure_url,
+          public_id: upload.public_id,
+        };
+      } catch (cloudinaryError) {
+        console.error("Cloudinary upload error:", cloudinaryError);
+        return res.status(500).json({ message: "Failed to upload image to Cloudinary" });
+      }
     }
 
     Object.assign(product, req.body);
@@ -162,13 +180,21 @@ const deleteProduct = async (req, res) => {
     }
 
     // 🗑 Delete image from Cloudinary
-    await cloudinary.uploader.destroy(product.image.public_id);
+    if (product.image?.public_id) {
+      try {
+        await cloudinary.uploader.destroy(product.image.public_id);
+      } catch (cloudinaryError) {
+        console.error("Cloudinary delete error:", cloudinaryError);
+        // Continue with deletion even if image deletion fails
+      }
+    }
 
     await product.deleteOne();
 
     res.json({ message: "Product deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Delete product error:", error);
+    res.status(500).json({ message: error.message || "Failed to delete product" });
   }
 };
 

@@ -1,6 +1,16 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
+// Define input style for consistency
+const inputStyle = {
+  padding: '10px 12px',
+  background: 'var(--bg-secondary)',
+  border: '1px solid var(--border-color)',
+  borderRadius: '6px',
+  color: 'var(--text-primary)',
+  fontSize: '14px'
+};
+
 export default function ProductForm({
   onSubmit,
   initialData = {},
@@ -16,14 +26,14 @@ export default function ProductForm({
     defaultValues: {
       ...initialData,
       category: initialData.category?._id || initialData.category || "", // ✅ Extract ID if object
-      image: typeof initialData.image === "string" ? initialData.image : "" // ✅ STRICTLY ensure string (Handle {} case)
+      image: initialData.image?.url || initialData.image || "" // ✅ Handle both object and string cases
     }
   });
 
   /* ================================
      RESET FORM ON EDIT MODE CHANGE
   ================================ */
-    useEffect(() => {
+  useEffect(() => {
     reset({
       ...initialData,
       category: initialData.category?._id || initialData.category || "",
@@ -31,14 +41,14 @@ export default function ProductForm({
     });
   }, [initialData, reset]);
 
-    const handleFormSubmit = (data) => {
+  const handleFormSubmit = (data) => {
     if (!data.image || !data.image.trim()) {
       alert("Product image is required");
       return;
     }
 
     // ✅ VALIDATION: Image is required
-        const payload = {
+    const payload = {
       name: data.name.trim(),
       description: data.description?.trim() || "",
       category: data.category,
@@ -64,14 +74,7 @@ export default function ProductForm({
           </label>
           <input
             {...register("name", { required: "Name is required" })}
-            style={{
-              padding: '10px 12px',
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '6px',
-              color: 'var(--text-primary)',
-              fontSize: '14px'
-            }}
+            style={inputStyle}
             placeholder="Enter product name"
           />
           {errors.name && <span style={{ color: 'var(--danger)', fontSize: '12px' }}>{errors.name.message}</span>}
@@ -85,12 +88,7 @@ export default function ProductForm({
           <textarea
             {...register("description")}
             style={{
-              padding: '10px 12px',
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '6px',
-              color: 'var(--text-primary)',
-              fontSize: '14px',
+              ...inputStyle,
               minHeight: '80px',
               resize: 'vertical'
             }}
@@ -100,7 +98,7 @@ export default function ProductForm({
       </div>
 
       {/* =========================
-          ROW 2: CATEGORY, STOCK & IMAGE
+          ROW 2: CATEGORY, REVIEWS & IMAGE
       ========================= */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
         {/* CATEGORY */}
@@ -110,14 +108,7 @@ export default function ProductForm({
           </label>
           <select
             {...register("category", { required: "Category is required" })}
-            style={{
-              padding: '10px 12px',
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '6px',
-              color: 'var(--text-primary)',
-              fontSize: '14px'
-            }}
+            style={inputStyle}
           >
             <option value="">Select category</option>
             {categories.map((cat) => (
@@ -139,34 +130,26 @@ export default function ProductForm({
             {...register("reviews", {
               min: { value: 0, message: "Reviews cannot be negative" }
             })}
-            style={{
-              padding: '10px 12px',
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '6px',
-              color: 'var(--text-primary)',
-              fontSize: '14px'
-            }}
+            style={inputStyle}
             placeholder="0"
           />
           {errors.reviews && <span style={{ color: 'var(--danger)', fontSize: '12px' }}>{errors.reviews.message}</span>}
         </div>
 
         {/* IMAGE INPUT */}
-        {/* =========================
-    PRODUCT IMAGE
-========================= */}
-                {/* IMAGE URL / BASE64 */}
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-          <label>Product Image *</label>
+          <label style={{ color: 'var(--text-primary)', fontWeight: '600', fontSize: '14px' }}>
+            Product Image *
+          </label>
           <input
-            {...register("image", { required: true })}
+            {...register("image", { required: "Product image is required" })}
             placeholder="Paste image URL or base64"
             style={inputStyle}
           />
           <small style={{ color: "var(--text-secondary)", fontSize: 12 }}>
             Cloudinary supports URL or base64 (data:image/...)
           </small>
+          {errors.image && <span style={{ color: 'var(--danger)', fontSize: '12px' }}>{errors.image.message}</span>}
         </div>
       </div>
 
@@ -184,14 +167,7 @@ export default function ProductForm({
             required: "Price is required",
             min: { value: 0, message: "Price cannot be negative" }
           })}
-          style={{
-            padding: '10px 12px',
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '6px',
-            color: 'var(--text-primary)',
-            fontSize: '14px'
-          }}
+          style={inputStyle}
           placeholder="Enter product price"
         />
         {errors.price && <span style={{ color: 'var(--danger)', fontSize: '12px' }}>{errors.price.message}</span>}

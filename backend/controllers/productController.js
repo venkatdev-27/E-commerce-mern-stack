@@ -63,7 +63,7 @@ const getProducts = async (req, res) => {
         }
       }
 
-      // ✅ Apply valid Category ID (either direct or resolved from slug)
+      // ✅ Apply valid Category ID (either dire9*ct or resolved from slug)
       query.category = categoryId;
     }
 

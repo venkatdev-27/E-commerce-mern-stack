@@ -1,6 +1,17 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
+// Define input style for consistency
+const inputStyle = {
+  padding: '8px 12px',
+  background: 'var(--bg-secondary)',
+  border: '1px solid var(--border-color)',
+  borderRadius: '4px',
+  color: 'var(--text-primary)',
+  fontSize: '14px',
+  height: '36px'
+};
+
 export default function CategoryForm({
   onSubmit,
   initialData = {},
@@ -10,19 +21,26 @@ export default function CategoryForm({
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors }
   } = useForm({
-    defaultValues: initialData
+    defaultValues: {
+      ...initialData,
+      image: initialData.image?.url || initialData.image || ""
+    }
   });
 
   /* ================================
      RESET FORM ON EDIT CHANGE
   ================================ */
   useEffect(() => {
-    reset(initialData);
+    reset({
+      ...initialData,
+      image: initialData.image?.url || initialData.image || ""
+    });
   }, [initialData, reset]);
   
-    const handleImageFileChange = (e) => {
+  const handleImageFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -65,21 +83,11 @@ export default function CategoryForm({
             required: "Name is required",
             validate: (v) => v.trim() !== "" || "Name cannot be empty"
           })}
-          style={{
-            padding: '8px 12px',
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '4px',
-            color: 'var(--text-primary)',
-            fontSize: '14px',
-            height: '36px'
-          }}
+          style={inputStyle}
           placeholder="Enter category name"
         />
         {errors.name && <span style={{ color: 'var(--danger)', fontSize: '12px' }}>{errors.name.message}</span>}
       </div>
-
-
 
       {/* =========================
           DESCRIPTION FIELD
@@ -91,12 +99,7 @@ export default function CategoryForm({
         <textarea
           {...register("description")}
           style={{
-            padding: '8px 12px',
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '4px',
-            color: 'var(--text-primary)',
-            fontSize: '14px',
+            ...inputStyle,
             minHeight: '60px',
             resize: 'vertical'
           }}
@@ -107,9 +110,6 @@ export default function CategoryForm({
       {/* =========================
           IMAGE INPUT FIELD
       ========================= */}
-      {/* =========================
-    CATEGORY IMAGE
-========================= */}
       <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
         <label
           style={{
@@ -118,7 +118,7 @@ export default function CategoryForm({
             fontSize: "14px",
           }}
         >
-          Category Image
+          Category Image *
         </label>
 
         {/* FILE UPLOAD */}
@@ -126,18 +126,7 @@ export default function CategoryForm({
           <input
             type="file"
             accept=".jpg,.jpeg,.png"
-                  onChange={(e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          // ✅ store base64 in `image`
-          setValue("image", reader.result);
-        };
-        reader.readAsDataURL(file);
-      }}
-
+            onChange={handleImageFileChange}
             style={{
               padding: "6px",
               background: "var(--bg-secondary)",
@@ -193,21 +182,13 @@ export default function CategoryForm({
         </div>
 
         {/* IMAGE URL */}
-         <input
-    type="text"
-    placeholder="https://example.com/category-image.jpg"
-    {...register("image", {
-      required: "Category image is required",
-    })}
-          style={{
-            padding: "8px 12px",
-            background: "var(--bg-secondary)",
-            border: "1px solid var(--border-color)",
-            borderRadius: "4px",
-            color: "var(--text-primary)",
-            fontSize: "14px",
-            height: "36px",
-          }}
+        <input
+          type="text"
+          placeholder="https://example.com/category-image.jpg"
+          {...register("image", {
+            required: "Category image is required",
+          })}
+          style={inputStyle}
         />
         <small
           style={{
@@ -217,6 +198,7 @@ export default function CategoryForm({
         >
           Alternative: Provide image URL
         </small>
+        {errors.image && <span style={{ color: 'var(--danger)', fontSize: '12px' }}>{errors.image.message}</span>}
       </div>
 
       {/* =========================
