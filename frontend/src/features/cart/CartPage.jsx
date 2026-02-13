@@ -4,6 +4,7 @@ import { Trash2, Plus, Minus, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { removeFromCart, updateQuantity } from '@/store/cartSlice';
 import { useToast } from '@/context/ToastContext';
+import { getImageUrl } from '@/utils/imageUtils';
 
 const CartPage = () => {
     const dispatch = useAppDispatch();
@@ -84,7 +85,7 @@ const CartPage = () => {
                             >
                                 <div className="w-full sm:w-32 h-32 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 relative">
                                     <img
-                                        src={item.image}
+                                        src={getImageUrl(item.image.url)}
                                         alt={item.name}
                                         className="w-full h-full object-cover"
                                     />
