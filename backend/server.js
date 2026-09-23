@@ -88,6 +88,10 @@ const startServer = async () => {
     app.get("/", (req, res) => {
       res.send("API is running 🚀");
     });
+    
+    app.get("/health", (req, res) => {
+      res.status(200).json({ status: "OK", message: "Server is healthy" });
+    });
 
     /* ERROR HANDLER */
     app.use((err, req, res, next) => {
