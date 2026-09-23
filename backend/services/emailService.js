@@ -1,24 +1,29 @@
-const sgMail = require("@sendgrid/mail");
+const nodemailer = require("nodemailer");
 
 const APP_NAME = "LuxeMarket";
 
-// Safety check
-if (!process.env.SENDGRID_API_KEY) {
-  console.error("❌ SENDGRID_API_KEY is missing");
+// Safety checks
+if (!process.env.GMAIL_USER) {
+  console.error("❌ GMAIL_USER is missing");
+}
+if (!process.env.GMAIL_APP_PASSWORD) {
+  console.error("❌ GMAIL_APP_PASSWORD is missing");
 }
 
-if (!process.env.SENDGRID_FROM_EMAIL) {
-  console.error("❌ SENDGRID_FROM_EMAIL is missing");
-}
-
-// Load API key
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// Create reusable transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+});
 
 const sendOtpEmail = async (email, otp, expiresIn = "2 minutes") => {
   try {
     const msg = {
+      from: `"${APP_NAME}" <${process.env.GMAIL_USER}>`,
       to: email,
-      from: process.env.SENDGRID_FROM_EMAIL, // must be verified
       subject: `Your OTP for ${APP_NAME}`,
       text: `Your OTP is ${otp}. It is valid for ${expiresIn}.`,
       html: `
@@ -39,17 +44,14 @@ const sendOtpEmail = async (email, otp, expiresIn = "2 minutes") => {
       `,
     };
 
-    await sgMail.send(msg);
-    console.log("✅ OTP sent via SendGrid");
+    await transporter.sendMail(msg);
+    console.log("✅ OTP sent via Nodemailer (Gmail)");
 
     return { success: true };
   } catch (error) {
-    console.error(
-      "❌ SendGrid Error:",
-      error.response?.body || error.message
-    );
+    console.error("❌ Nodemailer Error:", error.message);
     return { success: false };
   }
 };
 
-module.exports = { sendOtpEmail };
+module.exports = { sendOtpEmail, transporter };

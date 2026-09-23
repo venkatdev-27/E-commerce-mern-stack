@@ -1,8 +1,5 @@
 const SupportMessage = require("../models/SupportMessage");
-const sgMail = require("@sendgrid/mail");
-
-// Load API key
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const { transporter } = require("../services/emailService");
 
 // Submit support message from frontend
 const submitSupportMessage = async (req, res) => {
@@ -219,10 +216,10 @@ const sendSupportReply = async (req, res) => {
       });
     }
 
-    // Send email via SendGrid
+    // Send email via Nodemailer (Gmail)
     const msg = {
+      from: `"LuxeMarket Support" <${process.env.GMAIL_USER}>`,
       to: message.email,
-      from: process.env.SENDGRID_FROM_EMAIL,
       subject: `Re: ${message.subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -249,7 +246,7 @@ const sendSupportReply = async (req, res) => {
 
           <p>Best regards,<br>
           LuxeMarket Support Team<br>
-          Email: luxemarekt008@gmail.com</p>
+          Email: ${process.env.GMAIL_USER}</p>
 
           <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
           <p style="font-size: 12px; color: #666;">
@@ -259,8 +256,8 @@ const sendSupportReply = async (req, res) => {
       `
     };
 
-    await sgMail.send(msg);
-    console.log("✅ Support reply sent via SendGrid");
+    await transporter.sendMail(msg);
+    console.log("✅ Support reply sent via Nodemailer (Gmail)");
 
     // Update message status to replied
     await SupportMessage.findByIdAndUpdate(id, { status: 'replied' });
